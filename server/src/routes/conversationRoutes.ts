@@ -1,7 +1,7 @@
 import express from "express";
 import * as authController from "../controllers/authController";
 import * as conversationController from "../controllers/conversationController";
-import * as messageController from "../controllers/messageController";
+import messageRouter from "../routes/messageRoutes";
 
 const Router = express.Router();
 
@@ -17,6 +17,6 @@ Router.route("/")
     conversationController.createConversation
   );
 Router.route("/:id").get(conversationController.getConversation);
-Router.route("/:conversation/messages").get(messageController.getMessages);
+Router.use("/:conversation/messages", messageRouter);
 
 export default Router;

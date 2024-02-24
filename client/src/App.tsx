@@ -1,15 +1,16 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Chat, Conversations, Login, Signup } from "./page";
+import { Chat, ChatHome, Conversations, Home, Login, Signup } from "./page";
 import { NavigateHome, ProtectRoute } from "./components/auth";
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<div></div>} />
+        <Route path="/" element={<Home/>} />
 
         <Route element={<ProtectRoute />}>
           <Route path="/conversations" element={<Conversations />}>
+            <Route index element={<ChatHome />} />
             <Route path=":id" element={<Chat />} />
           </Route>
         </Route>

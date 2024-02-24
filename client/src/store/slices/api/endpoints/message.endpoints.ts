@@ -17,8 +17,8 @@ const MessageEndpoints = ApiSlice.injectEndpoints({
     >({
       query: ({ id, page }) =>
         `conversations/${id}/messages?limit=10&page=${page}`,
-      serializeQueryArgs: ({ endpointName }) => {
-        return endpointName;
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        return endpointName + queryArgs.id;
       },
       merge: (currentCache, newItems) => {
         currentCache.data.unshift(...newItems.data);
@@ -39,7 +39,10 @@ export const addNewMessage = (newMsg: Message, conversationId: string) =>
     "getMessages",
     { id: conversationId, page: 0 },
     (draft) => {
-      draft.data = [...draft.data, newMsg];
+      draft.data = [
+        ...draft.data.filter((msg) => msg._id !== newMsg._id),
+        newMsg,
+      ];
     }
   );
 

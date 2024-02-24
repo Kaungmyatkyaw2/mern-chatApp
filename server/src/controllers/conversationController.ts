@@ -1,10 +1,9 @@
 import { RequestHandler } from "express";
-import { createOne, getOne } from "./handlerFactory";
+import { getOne } from "./handlerFactory";
 import { Conversation, ConversationModel } from "../models/conversationModel";
 import { catchAsync } from "../utils/catchAsync";
 import { UserModel } from "../models/userModel";
 import AppError from "../utils/appError";
-import * as handlerFactory from "./handlerFactory";
 
 const prepareToCreate: RequestHandler = (req, res, next) => {
   (req.body as { members: string[] }).members = [
@@ -37,18 +36,70 @@ const getConversation: RequestHandler = getOne<Conversation>(
   ConversationModel,
   "members"
 );
-const createConversation: RequestHandler =
-  createOne<Conversation>(ConversationModel);
+const createConversation: RequestHandler = catchAsync(
+  async (req, res, next) => {
+    let data = await ConversationModel.create(req.body);
 
-const getConversations = handlerFactory.getAll(ConversationModel, [
-  "members",
-  "lastMessage",
-]);
+    data = await data.populate("members");
+
+    res.status(201).json({
+      status: "success",
+      data,
+    });
+  }
+);
+const getConversations = catchAsync(async (req, res, next) => {
+  let data = await ConversationModel.aggregate([
+    {
+      $match: {
+        members: req.user?._id,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "members",
+        foreignField: "_id",
+        as: "members",
+      },
+    },
+    {
+      $lookup: {
+        from: "messages",
+        localField: "lastMessage",
+        foreignField: "_id",
+        as: "lastMessageArray",
+      },
+    },
+    {
+      $sort: {
+        "lastMessageArray.createdAt": -1,
+      },
+    },
+    {
+      $addFields: {
+        lastMessage: { $arrayElemAt: ["$lastMessageArray", 0] },
+      },
+    },
+    {
+      $project: {
+        lastMessageArray: 0,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    results: data.length,
+    data,
+  });
+});
 
 const prepareToGetConversations: RequestHandler = (req, res, next) => {
   const userId = req.user?._id;
 
   req.query.members = userId;
+  req.query.sort = "-lastMessage.createdAt";
 
   next();
 };

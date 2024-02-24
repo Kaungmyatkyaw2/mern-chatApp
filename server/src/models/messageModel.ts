@@ -8,6 +8,7 @@ export interface Message extends Document {
   sender: User | string;
   createdAt: Date;
   text: string;
+  isDeleted?: boolean;
 }
 
 const MessageSchema = new Schema<Message>(
@@ -25,6 +26,10 @@ const MessageSchema = new Schema<Message>(
     text: {
       type: String,
       required: [true, "Text is required to an message"],
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

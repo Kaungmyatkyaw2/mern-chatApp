@@ -1,47 +1,57 @@
-import { Box, IconButton, TextField, Typography } from "@mui/material";
-import { ArrowBack, Send } from "@mui/icons-material";
-import { useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Box, CircularProgress, IconButton, Typography } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGetConversationQuery } from "../store/slices/api/endpoints/conversation.endpoints";
 import useGetMember from "../hooks/useGetMember";
 import UserAvatar from "../components/conversation/UserAvatar";
-import {
-  useCreateMessageMutation,
-  useGetMessagesQuery,
-} from "../store/slices/api/endpoints/message.endpoints";
-import { Socket } from "socket.io-client";
+import { useGetMessagesQuery } from "../store/slices/api/endpoints/message.endpoints";
 import { useEffect, useRef, useState } from "react";
-import { LoadingButton } from "@mui/lab";
-import { useSelector } from "react-redux";
-import { getUser } from "../store/slices/auth.slice";
+import { MessageCard, MessageSendInput } from "../components/message";
+import GroupAvatar from "../components/conversation/GroupAvatar";
+
+const ChatLoading = () => {
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        py: "20px",
+      }}
+    >
+      <CircularProgress size={30} />
+    </Box>
+  );
+};
 
 export const Chat = () => {
-  const { socket } = useOutletContext<{ socket: Socket | null }>();
   const { id } = useParams();
-  const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
-
+  const [isScrolled, setIsScrolled] = useState(false);
   const chatDisplay = useRef<HTMLDivElement>(null);
-
-  const user = useSelector(getUser);
+  const chatEndDisplay = useRef<HTMLDivElement>(null);
   const conversationQuery = useGetConversationQuery(id || "");
   const otherUser = useGetMember(conversationQuery.data?.data);
-
-  const [sendMessage, createMessageMutation] = useCreateMessageMutation();
   const messagesQuery = useGetMessagesQuery({ id: id as string, page });
   const navigate = useNavigate();
+
+  const conversation = conversationQuery.data?.data;
+  const messages = messagesQuery.data?.data;
 
   useEffect(() => {
     if (chatDisplay.current == null) return;
     const el = chatDisplay.current;
 
-    const fn = async () => {
-      if (messagesQuery.data?.results == 10 && !messagesQuery.isFetching) {
-        setPage((prev) => prev + 1);
-      }
-    };
     const onScroll = async () => {
       if (el.scrollTop < 30) {
-        await fn();
+        if (messagesQuery.data?.results == 10 && !messagesQuery.isFetching) {
+          setPage((prev) => prev + 1);
+        }
+      }
+      if (el.scrollHeight == el.scrollTop) {
+        setIsScrolled(false);
+      } else {
+        setIsScrolled(true);
       }
     };
 
@@ -51,28 +61,27 @@ export const Chat = () => {
   }, [messagesQuery]);
 
   useEffect(() => {
-    if (chatDisplay.current) {
-      chatDisplay.current.scrollTop = chatDisplay.current?.scrollHeight || 0;
+    if (!messagesQuery.isFetching) {
+      chatEndDisplay.current?.scrollIntoView();
     }
-  }, [messagesQuery.data]);
-
-  const onSendMessage = async () => {
-    try {
-      if (message) {
-        const res = await sendMessage({
-          conversation: id,
-          text: message,
-        }).unwrap();
-
-        socket?.emit("sendMessage", res.data);
-      }
-    } catch (error) {}
-  };
+  }, [isScrolled, messagesQuery.data]);
 
   return (
     <Box width={"100%"} height={"100vh"}>
       {conversationQuery.isLoading ? (
-        <h1>Loading....</h1>
+        <Box
+          sx={{
+            width: "100%",
+            height: "80%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+          }}
+        >
+          <CircularProgress size={30} />
+          <Typography>Please wait....</Typography>
+        </Box>
       ) : (
         <>
           <Box
@@ -88,10 +97,14 @@ export const Chat = () => {
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <UserAvatar user={otherUser} />
+              {conversation?.isGroup ? (
+                <GroupAvatar members={conversation?.members} />
+              ) : (
+                <UserAvatar name={otherUser?.name} width={55} height={55} />
+              )}
               <Box>
                 <Typography fontWeight={"bold"} fontSize={"18px"}>
-                  {otherUser?.name}
+                  {conversation?.isGroup ? conversation?.name : otherUser?.name}{" "}
                 </Typography>
                 <Typography fontSize={"13px"}>Active</Typography>
               </Box>
@@ -106,7 +119,7 @@ export const Chat = () => {
           </Box>
           <Box
             sx={{
-              height: "calc(100% - 142px)",
+              height: "calc(100% - 152px)",
               overflowY: "scroll",
               px: "20px",
             }}
@@ -114,65 +127,20 @@ export const Chat = () => {
           >
             <Box sx={{ pt: "5px", pb: "20px" }}>
               {messagesQuery.isLoading ? (
-                <></>
+                <ChatLoading />
               ) : (
-                messagesQuery.data?.data.map((msg) => (
-                  <Box
+                messages?.map((msg) => (
+                  <MessageCard
+                    isGroup={conversation?.isGroup}
+                    msg={msg}
                     key={msg._id}
-                    sx={{
-                      display: "flex",
-                      width: "100%",
-                      justifyContent:
-                        msg.sender._id == user?._id ? "end" : "start",
-                      mt: "15px",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        maxWidth: "80%",
-                        bgcolor:
-                          msg.sender._id == user?._id
-                            ? "lightskyblue"
-                            : "whitesmoke",
-
-                        px: "15px",
-                        py: "15px",
-                        borderRadius: "10px",
-                      }}
-                    >
-                      <Typography variant="subtitle2">{msg.text}</Typography>
-                    </Box>
-                  </Box>
+                  />
                 ))
               )}
+              <div ref={chatEndDisplay} />
             </Box>
           </Box>
-          <Box
-            sx={{
-              width: "full",
-              height: "70px",
-              px: "20px",
-              display: "flex",
-              alignItems: "center",
-              borderTop: 1,
-              borderColor: "#DCDCDC",
-            }}
-          >
-            <TextField
-              sx={{ width: "100%" }}
-              id="standard-basic"
-              variant="standard"
-              placeholder="Message..."
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <LoadingButton
-              loading={createMessageMutation.isLoading}
-              onClick={onSendMessage}
-              sx={{ width: "50px", height: "50px" }}
-            >
-              <Send />
-            </LoadingButton>
-          </Box>
+          <MessageSendInput />
         </>
       )}
     </Box>

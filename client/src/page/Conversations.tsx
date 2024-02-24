@@ -1,41 +1,100 @@
-import { Box, Grid, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  Grid,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import { Outlet, useLocation } from "react-router-dom";
-import { PersonAdd } from "@mui/icons-material";
-import { useGetConversationsQuery } from "../store/slices/api/endpoints/conversation.endpoints";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Logout, Person, PersonAdd } from "@mui/icons-material";
+import {
+  addNewConversation,
+  updateLastMsg,
+  useGetConversationsQuery,
+} from "../store/slices/api/endpoints/conversation.endpoints";
 import {
   ConversationCard,
   CreateConversation,
+  CreateConversationGroup,
 } from "../components/conversation";
 import { useEffect, useState } from "react";
 import io, { Socket } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
-import { getUser } from "../store/slices/auth.slice";
+import { getUser, logOut } from "../store/slices/auth.slice";
 import { Conversation } from "../types/conversations.types";
 import { addNewMessage } from "../store/slices/api/endpoints/message.endpoints";
 import { Message } from "../types/message.types";
+import UserAvatar from "../components/conversation/UserAvatar";
+import { setConversation } from "../store/slices/conversation.slice";
+import { useLogoutMutation } from "../store/slices/api/endpoints/auth.endpoints";
+import NoData from "../components/others/NoData";
 
 let socket: undefined | Socket;
 
 export const Conversations = () => {
   const location = useLocation();
   const isInChat = !location.pathname.endsWith("conversations");
-  const { data, isLoading } = useGetConversationsQuery();
-  const [open, setOpen] = useState(false);
+
+  const { data, isLoading, isSuccess } = useGetConversationsQuery();
+  const conversations = data?.data || [];
+
+  const [openCreateBox, setOpenCreateBox] = useState(false);
+  const [openCreateGroupBox, setOpenCreateGroupBox] = useState(false);
   const user = useSelector(getUser);
   const dispatch = useDispatch();
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const [logout] = useLogoutMutation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      dispatch(logOut());
+      navigate("/login");
+    } catch {}
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      dispatch(setConversation(data.data));
+    }
+  }, [isSuccess]);
 
   useEffect(() => {
     socket = io("http://localhost:3000/");
     socket.emit("connected", { userId: user?._id });
     socket.on("receiveMessage", (data: Message) => {
       //@ts-ignore
-      dispatch(addNewMessage(data, data.conversation as string));
+      dispatch(addNewMessage(data, data.conversation._id as string));
+      //@ts-ignore
+      dispatch(updateLastMsg(data, data.conversation._id as string));
+    });
+    socket.on("receiveNewConversation", (data: Conversation) => {
+      //@ts-ignore
+      dispatch(addNewConversation(data));
     });
   }, []);
 
-  const handleOpen = () => {
-    setOpen(true);
+  const handleOpenCreateBox = () => {
+    setOpenCreateBox(true);
+  };
+  const handleOpenCreateGroupBox = () => {
+    setOpenCreateGroupBox(true);
+  };
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
   return (
@@ -70,21 +129,60 @@ export const Conversations = () => {
                 Message
               </Typography>
               <Box>
-                <IconButton onClick={handleOpen}>
+                <IconButton onClick={handleOpenCreateBox}>
                   <PersonAdd />
                 </IconButton>
 
-                <IconButton sx={{ ml: "10px" }}>
+                <IconButton
+                  onClick={handleOpenCreateGroupBox}
+                  sx={{ ml: "10px" }}
+                >
                   <GroupAddIcon />
                 </IconButton>
+                <IconButton onClick={handleMenuClick}>
+                  <UserAvatar
+                    name={user?.name}
+                    height={40}
+                    width={40}
+                    sx={{ curosr: "pointer", ml: "10px" }}
+                  />
+                </IconButton>
+                <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+                  <MenuItem>
+                    <ListItemIcon>
+                      <Person fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Profile</ListItemText>
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>
+                    <ListItemIcon>
+                      <Logout fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Logout</ListItemText>
+                  </MenuItem>
+                </Menu>
               </Box>
             </Box>
             {isLoading ? (
-              <h1>Loading</h1>
-            ) : (
-              data?.data.map((con: Conversation) => (
+              <Box
+                sx={{
+                  width: "100%",
+                  height: "80%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  flexDirection: "column",
+                }}
+              >
+                <CircularProgress size={30} />
+                <Typography>Please wait....</Typography>
+              </Box>
+            ) : conversations.length ? (
+              conversations.map((con: Conversation) => (
                 <ConversationCard key={con._id} conversation={con} />
               ))
+            ) : (
+              <NoData text="Chat with your friend..." />
             )}
           </Box>
         </Grid>
@@ -106,7 +204,15 @@ export const Conversations = () => {
           />
         </Grid>
       </Grid>
-      <CreateConversation setOpen={setOpen} open={open} />
+      <CreateConversation
+        socket={socket}
+        setOpen={setOpenCreateBox}
+        open={openCreateBox}
+      />
+      <CreateConversationGroup
+        setOpen={setOpenCreateGroupBox}
+        open={openCreateGroupBox}
+      />
     </>
   );
 };

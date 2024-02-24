@@ -20,18 +20,18 @@ const conversationSchema = new Schema<Conversation>(
     },
     members: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.ObjectId,
         ref: "user",
       },
     ],
     admins: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.ObjectId,
         ref: "user",
       },
     ],
     lastMessage: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.ObjectId,
       ref: "message",
     },
     isGroup: {
@@ -43,6 +43,20 @@ const conversationSchema = new Schema<Conversation>(
     timestamps: true,
   }
 );
+
+conversationSchema.path("members").validate(function (value) {
+  if (!value.length) {
+    return true;
+  }
+  const uniqueLabels = new Set(value.map((label: any) => label.toString()));
+  return uniqueLabels.size === value.length;
+}, "Duplicate user in a same conversation.");
+
+conversationSchema.path("members").validate(function (value) {
+  if (value.length == 1) {
+    return false;
+  }
+}, "Conversation can't be create with only one user.");
 
 export const ConversationModel = mongoose.model<Conversation>(
   "conversation",

@@ -3,7 +3,6 @@ import { Message, MessageModel } from "../models/messageModel";
 import * as handlerFactory from "./handlerFactory";
 import { catchAsync } from "../utils/catchAsync";
 import { ConversationModel } from "../models/conversationModel";
-import ApiFeatures from "../utils/apiFeatures";
 
 const prepareToCreate: RequestHandler = (req, res, next) => {
   req.body.sender = req.user?._id;
@@ -13,7 +12,7 @@ const prepareToCreate: RequestHandler = (req, res, next) => {
 const createMessage = catchAsync(async (req, res, next) => {
   let data = await MessageModel.create(req.body);
 
-  data = await data.populate("sender");
+  data = await data.populate(["sender", "conversation"]);
 
   await ConversationModel.updateOne(
     { _id: data.conversation },
@@ -31,6 +30,10 @@ const prepareToGetMessages: RequestHandler = (req, res, next) => {
   req.query.conversation = conversationId;
   next();
 };
-const getMessages = handlerFactory.getAll(MessageModel, "sender",true);
+const getMessages = handlerFactory.getAll<Message>(
+  MessageModel,
+  ["sender", "conversation"],
+  true
+);
 
 export { createMessage, prepareToCreate, getMessages, prepareToGetMessages };

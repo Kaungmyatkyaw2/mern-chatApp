@@ -63,6 +63,19 @@ const signup: RequestHandler = catchAsync(async (req, res, next) => {
   createSendJWT(user, 201, res, true);
 });
 
+const logout: RequestHandler = (req, res, next) => {
+  const cookieConfig: CookieOptions = {
+    path: "/",
+    domain: "localhost",
+    secure: true,
+    httpOnly: true,
+    sameSite: "none",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+  res.clearCookie("refresh_token", cookieConfig);
+  res.sendStatus(204);
+};
+
 const login: RequestHandler = catchAsync(async (req, res, next) => {
   const { email, password } = req.body as { email: string; password: string };
 
@@ -170,4 +183,4 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
   next();
 });
 
-export { signup, login, protect, refresh };
+export { signup, login, protect, refresh,logout };

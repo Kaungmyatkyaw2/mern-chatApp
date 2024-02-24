@@ -24,7 +24,18 @@ const endpoints = ApiSlice.injectEndpoints({
     getMe: builder.query<QueryResponse<User>, void>({
       query: () => "users/getMe",
     }),
+    logout: builder.mutation<LoginReturnType, void>({
+      query: () => ({
+        url: "users/logout",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useSignupMutation, useGetMeQuery } = endpoints;
+export const {
+  useLoginMutation,
+  useSignupMutation,
+  useGetMeQuery,
+  useLogoutMutation,
+} = endpoints;

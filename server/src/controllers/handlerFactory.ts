@@ -3,7 +3,7 @@ import { catchAsync } from "../utils/catchAsync";
 import AppError from "../utils/appError";
 import ApiFeatures from "../utils/apiFeatures";
 
-export const getOne = <T>(UModel: Model<T>, popuOpt?: string) =>
+export const getOne = <T>(UModel: Model<T>, popuOpt?: string | string[]) =>
   catchAsync(async (req, res, next) => {
     const id = req.params.id;
 
@@ -19,16 +19,6 @@ export const getOne = <T>(UModel: Model<T>, popuOpt?: string) =>
     });
   });
 
-export const createOne = <T>(UModel: Model<T>) =>
-  catchAsync(async (req, res, next) => {
-    let data = await UModel.create(req.body);
-
-    res.status(201).json({
-      status: "success",
-      data,
-    });
-  });
-
 export const getAll = <T>(
   UModel: Model<T>,
   popuOpt?: string | string[],
@@ -39,10 +29,9 @@ export const getAll = <T>(
       UModel.find().populate(popuOpt || []),
       req.query
     )
-      .filter()
       .sort()
-      .paginate();
-
+      .paginate()
+      .filter();
     let data = await query.query;
 
     res.status(200).json({

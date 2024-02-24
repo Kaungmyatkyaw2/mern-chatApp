@@ -22,25 +22,26 @@ const io = new Server(expressServer, {
 });
 
 io.on("connection", (socket) => {
-  let conversations: string[] = [];
-
   socket.on("connected", async (data) => {
     const { userId } = data;
-    conversations = (await ConversationModel.find({ members: userId })).map(
-      (el) => "" + el._id
-    );
 
-    conversations.forEach((roomId) => {
-      socket.join("" + roomId);
-    });
-
-    conversations.forEach((roomId) => {
-      io.to(roomId).emit("userActive", { userId: userId });
-    });
+    socket.join(userId);
   });
 
-  socket.on("sendMessage", (data) => {
-    const roomId = "" + data.conversation;
-    io.to("" + roomId).emit("receiveMessage", data);
+  socket.on("sendMessage", (data: Message) => {
+    if (typeof data.conversation !== "string") {
+      data.conversation.members.forEach((el) => {
+        io.to("" + el).emit("receiveMessage", data);
+      });
+    }
+  });
+
+  socket.on("createConversation", (data: Conversation) => {
+    data.members.forEach((el) => {
+      const isString = typeof el == "string";
+
+      //@ts-ignore
+      io.to(isString ? el : el._id).emit("receiveNewConversation", data);
+    });
   });
 });
