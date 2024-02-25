@@ -1,6 +1,5 @@
 import { ErrorRequestHandler } from "express";
 import { Error } from "mongoose";
-import { MongoError } from "mongodb";
 import AppError from "../utils/appError";
 
 const handleValidationError = (err: Error.ValidationError) => {
