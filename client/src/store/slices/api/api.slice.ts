@@ -5,7 +5,7 @@ import { logOut, setAuth } from "../auth.slice";
 import { LoginReturnType } from "../../../types/queryResponse.types";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:3000/",
+  baseUrl: process.env.REACT_APP_API_URL,
   credentials: "include",
 
   prepareHeaders: (headers, { getState }) => {
@@ -41,6 +41,6 @@ const baseQueryWithReAuth: BaseQueryFn = async (args, api, extraOptions) => {
 export const ApiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReAuth,
-  tagTypes : ["Conversations"],
+  tagTypes: ["Conversations"],
   endpoints: (_) => ({}),
 });

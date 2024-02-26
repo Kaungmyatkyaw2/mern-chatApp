@@ -33,7 +33,7 @@ const ErrorSnackbar = ({
         variant="filled"
         sx={{ width: "100%" }}
       >
-        {msg}
+        {msg || "Something went wrong!"}
       </Alert>
     </Snackbar>
   );

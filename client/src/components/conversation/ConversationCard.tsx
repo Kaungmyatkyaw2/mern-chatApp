@@ -59,7 +59,7 @@ export const ConversationCard = ({ conversation }: Props) => {
       {conversation.isGroup ? (
         <GroupAvatar members={conversation.members} />
       ) : (
-        <UserAvatar name={otherUser?.name} width={55} height={55} />
+        <UserAvatar user={otherUser} width={55} height={55} />
       )}
 
       <Box width={"100%"}>

@@ -37,6 +37,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("createConversation", (data: Conversation) => {
+    console.log(data);
     data.members.forEach((el) => {
       const isString = typeof el == "string";
 

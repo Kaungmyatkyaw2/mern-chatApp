@@ -23,7 +23,7 @@ const Home = () => {
       <AppBar position="static" sx={{ bgcolor: "white" }}>
         <Toolbar>
           <Typography variant="h6" sx={{ color: "black", fontWeight: "bold" }}>
-            ChatApp
+            Chatty
           </Typography>
           <Box sx={{ ml: "auto" }}>
             <Button onClick={toLogin}>Start Now</Button>
@@ -45,7 +45,7 @@ const Home = () => {
               Chat App With MERN Stack
             </Typography>
             <Typography variant="subtitle1" sx={{ color: "gray", mt: "15px" }}>
-              Explore a revolutionary chat experience with our MERn
+              Explore a revolutionary chat experience with our MERN
               stack-powered app, leveraging advanced WebSocket technology. From
               staying connected with friends to seamless collaboration, our app
               offers a responsive platform for all your messaging needs.

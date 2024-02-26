@@ -28,7 +28,7 @@ export const UserCard = ({ user, onClick, customText, disabled }: Props) => {
             gap: "10px",
           }}
         >
-          <UserAvatar name={user.name} />
+          <UserAvatar user={user} />
           <Typography variant="subtitle1">{user.name}</Typography>
         </Box>
         <Button disabled={!!disabled} onClick={onClick}>

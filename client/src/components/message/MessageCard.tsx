@@ -35,7 +35,7 @@ export const MessageCard = ({
     >
       {isGroup ? (
         <Box sx={isUserSent ? { ml: "10px" } : { mr: "10px" }}>
-          <UserAvatar name={msg.sender.name} width={40} height={40} />
+          <UserAvatar user={msg.sender} width={40} height={40} />
         </Box>
       ) : (
         ""

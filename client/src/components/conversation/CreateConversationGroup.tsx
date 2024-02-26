@@ -22,10 +22,12 @@ import { useCreateConversationMutation } from "../../store/slices/api/endpoints/
 import ErrorSnackbar from "../others/ErrorSnackbar";
 import { useSelector } from "react-redux";
 import { getUser } from "../../store/slices/auth.slice";
+import { Socket } from "socket.io-client";
 
 interface Props {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  socket?: Socket;
 }
 
 export const CreateConversationGroup = ({ open, setOpen }: Props) => {
@@ -140,7 +142,7 @@ export const CreateConversationGroup = ({ open, setOpen }: Props) => {
             {members.map((el) => (
               <Chip
                 label={el.name}
-                avatar={<UserAvatar name={el?.name} />}
+                avatar={<UserAvatar user={el} />}
                 onDelete={() => {
                   setMembers((prev) =>
                     prev.filter((mem) => mem._id !== el._id)
@@ -168,7 +170,6 @@ export const CreateConversationGroup = ({ open, setOpen }: Props) => {
                     addOrRemoveMember(el);
                   }}
                   customText={getUserCardBtnText(el)}
-                  setOpen={setOpen}
                   user={el}
                   key={el._id}
                 />

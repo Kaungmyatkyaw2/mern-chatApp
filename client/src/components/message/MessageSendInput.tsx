@@ -1,15 +1,17 @@
 import { LoadingButton } from "@mui/lab";
-import { Box, TextField } from "@mui/material";
+import { Box, IconButton, TextField } from "@mui/material";
 import { useCreateMessageMutation } from "../../store/slices/api/endpoints/message.endpoints";
 import { Socket } from "socket.io-client";
 import { useOutletContext, useParams } from "react-router-dom";
 import { useState } from "react";
-import { Send } from "@mui/icons-material";
+import { EmojiEmotions, Send } from "@mui/icons-material";
+import EmojiPicker from "emoji-picker-react";
 
 export const MessageSendInput = () => {
   const { id } = useParams();
   const { socket } = useOutletContext<{ socket: Socket | null }>();
   const [message, setMessage] = useState("");
+  const [ejBoxOpen, setEjBoxOpen] = useState(false);
   const [sendMessage, createMessageMutation] = useCreateMessageMutation();
   const onSendMessage = async () => {
     try {
@@ -25,6 +27,10 @@ export const MessageSendInput = () => {
     } catch (error) {}
   };
 
+  const emojiClickHandler = (e: any) => {
+    setMessage((prev) => prev + e.emoji);
+  };
+
   return (
     <Box
       sx={{
@@ -35,8 +41,33 @@ export const MessageSendInput = () => {
         alignItems: "center",
         borderTop: 1,
         borderColor: "#DCDCDC",
+        position: "relative",
       }}
     >
+      {ejBoxOpen && (
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: "calc( 100% - 20px )",
+            left: "10px",
+            width: {
+              md: 400,
+              xs: 280,
+            },
+          }}
+        >
+          <EmojiPicker width={"100%"} onEmojiClick={emojiClickHandler} />
+        </Box>
+      )}
+      <IconButton
+        onClick={() => {
+          setEjBoxOpen(!ejBoxOpen);
+        }}
+        color={ejBoxOpen ? "primary" : "default"}
+        sx={{ mr: "5px" }}
+      >
+        <EmojiEmotions />
+      </IconButton>
       <TextField
         maxRows={2}
         sx={{ width: "100%" }}

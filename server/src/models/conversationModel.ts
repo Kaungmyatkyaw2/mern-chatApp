@@ -58,6 +58,12 @@ conversationSchema.path("members").validate(function (value) {
   }
 }, "Conversation can't be create with only one user.");
 
+conversationSchema.path("members").validate(function (value) {
+  if (value.length < 3 && this.isGroup) {
+    return false;
+  }
+}, "Conversation group must have at least 3 users.");
+
 export const ConversationModel = mongoose.model<Conversation>(
   "conversation",
   conversationSchema

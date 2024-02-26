@@ -1,10 +1,11 @@
 import { Avatar, AvatarProps } from "@mui/material";
+import { User } from "../../types/user.types";
 
 interface Props extends AvatarProps {
   width?: number;
   height?: number;
   isForGroup?: boolean;
-  name: string | undefined;
+  user: User | undefined | null;
 }
 
 function stringToColor(string: string) {
@@ -34,8 +35,14 @@ function stringAvatar(name: string, sx: Object) {
     children: `${name.substring(0, 2)}`,
   };
 }
-const UserAvatar = ({ name, width = 55, height = 55, ...props }: Props) => {
-  return <Avatar {...props} {...stringAvatar(name || "", { width, height })} />;
+const UserAvatar = ({ user, width = 55, height = 55, ...props }: Props) => {
+  return (
+    <Avatar
+      {...props}
+      {...stringAvatar(user?.name || "", { width, height })}
+      src={user?.picture}
+    />
+  );
 };
 
 export default UserAvatar;

@@ -1,5 +1,5 @@
 import { Box, CircularProgress, IconButton, Typography } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
+import { ArrowBack, Error } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetConversationQuery } from "../store/slices/api/endpoints/conversation.endpoints";
 import useGetMember from "../hooks/useGetMember";
@@ -8,6 +8,7 @@ import { useGetMessagesQuery } from "../store/slices/api/endpoints/message.endpo
 import { useEffect, useRef, useState } from "react";
 import { MessageCard, MessageSendInput } from "../components/message";
 import GroupAvatar from "../components/conversation/GroupAvatar";
+import { ConversationDetailModal } from "../components/conversation";
 
 const ChatLoading = () => {
   return (
@@ -28,6 +29,7 @@ export const Chat = () => {
   const { id } = useParams();
   const [page, setPage] = useState(1);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const chatDisplay = useRef<HTMLDivElement>(null);
   const chatEndDisplay = useRef<HTMLDivElement>(null);
   const conversationQuery = useGetConversationQuery(id || "");
@@ -66,83 +68,122 @@ export const Chat = () => {
     }
   }, [isScrolled, messagesQuery.data]);
 
+  const handleOpenDetailModal = () => {
+    setDetailModalOpen(true);
+  };
+
+  if (conversationQuery.isError) {
+    return (
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+      >
+        <Error />
+        <Typography>Something went wrong!</Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Box width={"100%"} height={"100vh"}>
-      {conversationQuery.isLoading ? (
-        <Box
-          sx={{
-            width: "100%",
-            height: "80%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-          }}
-        >
-          <CircularProgress size={30} />
-          <Typography>Please wait....</Typography>
-        </Box>
-      ) : (
-        <>
+    <>
+      <ConversationDetailModal
+        conversation={conversation}
+        open={detailModalOpen}
+        setOpen={setDetailModalOpen}
+      />
+      <Box width={"100%"} height={"100vh"}>
+        {conversationQuery.isLoading ? (
           <Box
             sx={{
-              height: "70px",
-              width: "full",
-              px: "20px",
+              width: "100%",
+              height: "80%",
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
-              justifyContent: "space-between",
-              borderBottom: 1,
-              borderColor: "#DCDCDC",
+              flexDirection: "column",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              {conversation?.isGroup ? (
-                <GroupAvatar members={conversation?.members} />
-              ) : (
-                <UserAvatar name={otherUser?.name} width={55} height={55} />
-              )}
-              <Box>
-                <Typography fontWeight={"bold"} fontSize={"18px"}>
-                  {conversation?.isGroup ? conversation?.name : otherUser?.name}{" "}
-                </Typography>
-                <Typography fontSize={"13px"}>Active</Typography>
-              </Box>
-            </Box>
-            <IconButton
-              onClick={() => {
-                navigate("/conversations");
+            <CircularProgress size={30} />
+            <Typography>Please wait....</Typography>
+          </Box>
+        ) : (
+          <>
+            <Box
+              sx={{
+                height: "70px",
+                width: "full",
+                px: "20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderBottom: 1,
+                borderColor: "#DCDCDC",
               }}
             >
-              <ArrowBack />
-            </IconButton>
-          </Box>
-          <Box
-            sx={{
-              height: "calc(100% - 152px)",
-              overflowY: "scroll",
-              px: "20px",
-            }}
-            ref={chatDisplay}
-          >
-            <Box sx={{ pt: "5px", pb: "20px" }}>
-              {messagesQuery.isLoading ? (
-                <ChatLoading />
-              ) : (
-                messages?.map((msg) => (
-                  <MessageCard
-                    isGroup={conversation?.isGroup}
-                    msg={msg}
-                    key={msg._id}
+              <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {conversation?.isGroup ? (
+                  <GroupAvatar
+                    onClick={handleOpenDetailModal as any}
+                    members={conversation?.members}
                   />
-                ))
-              )}
-              <div ref={chatEndDisplay} />
+                ) : (
+                  <UserAvatar
+                    onClick={handleOpenDetailModal}
+                    user={otherUser}
+                    width={55}
+                    height={55}
+                  />
+                )}
+                <Box>
+                  <Typography fontWeight={"bold"} fontSize={"18px"}>
+                    {conversation?.isGroup
+                      ? conversation?.name
+                      : otherUser?.name}{" "}
+                  </Typography>
+                  <Typography fontSize={"13px"}>Active</Typography>
+                </Box>
+              </Box>
+              <IconButton
+                onClick={() => {
+                  navigate("/conversations");
+                }}
+              >
+                <ArrowBack />
+              </IconButton>
             </Box>
-          </Box>
-          <MessageSendInput />
-        </>
-      )}
-    </Box>
+            <Box
+              sx={{
+                height: "calc(100% - 152px)",
+                overflowY: "scroll",
+                px: "20px",
+              }}
+              ref={chatDisplay}
+            >
+              <Box sx={{ pt: "5px", pb: "20px" }}>
+                {messagesQuery.isLoading ? (
+                  <ChatLoading />
+                ) : (
+                  messages?.map((msg) => (
+                    <MessageCard
+                      isGroup={conversation?.isGroup}
+                      msg={msg}
+                      key={msg._id}
+                    />
+                  ))
+                )}
+                <div ref={chatEndDisplay} />
+              </Box>
+            </Box>
+            <MessageSendInput />
+          </>
+        )}
+      </Box>
+    </>
   );
 };

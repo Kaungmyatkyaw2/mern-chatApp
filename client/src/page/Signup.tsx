@@ -1,10 +1,8 @@
 import {
-  Alert,
   Button,
   FormControl,
   Grid,
   Paper,
-  Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
@@ -18,6 +16,7 @@ import { useDispatch } from "react-redux";
 import { useState } from "react";
 import { setAuth } from "../store/slices/auth.slice";
 import LoadingButton from "@mui/lab/LoadingButton";
+import ErrorSnackbar from "../components/others/ErrorSnackbar";
 
 interface FormValue {
   email: string;
@@ -45,17 +44,6 @@ export const Signup = () => {
     }
   };
 
-  const handleSnackBarClose = (
-    _?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setShowSnackBar(false);
-  };
-
   return (
     <>
       <div className="gridBackground">
@@ -67,21 +55,12 @@ export const Signup = () => {
         alignContent={"center"}
         justifyContent={"center"}
       >
-        <Snackbar
-          anchorOrigin={{ horizontal: "center", vertical: "top" }}
-          open={showSnackBar}
-          autoHideDuration={5000}
-          onClose={handleSnackBarClose}
-        >
-          <Alert
-            onClose={handleSnackBarClose}
-            severity="error"
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {(error as { data: { message: string } })?.data?.message}
-          </Alert>
-        </Snackbar>
+        <ErrorSnackbar
+          show={showSnackBar}
+          setShow={setShowSnackBar}
+          msg={(error as { data: { message: string } })?.data?.message}
+        />
+
         <Paper
           sx={{ width: 350, p: "15px", borderRadius: "10px", bgcolor: "white" }}
         >

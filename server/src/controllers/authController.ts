@@ -3,6 +3,8 @@ import { catchAsync } from "../utils/catchAsync";
 import { UserModel, User } from "../models/userModel";
 import * as jwt from "jsonwebtoken";
 import AppError from "../utils/appError";
+import crypto from "crypto";
+import cookieConfig from "../utils/cookieConfig";
 
 const signJWT = (id: string) =>
   jwt.sign({ id }, process.env.JWT_SECRET || "", {
@@ -28,15 +30,6 @@ const createSendJWT = (
       { expiresIn: "7d" }
     );
 
-    const cookieConfig: CookieOptions = {
-      path: "/",
-      domain: "localhost",
-      secure: true,
-      httpOnly: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
-
     res.cookie("refresh_token", refreshToken, cookieConfig);
   }
 
@@ -46,6 +39,38 @@ const createSendJWT = (
     data: user,
   });
 };
+
+function generateRandomPassword(length: number) {
+  const buffer = crypto.randomBytes(length);
+
+  const password = buffer.toString("hex");
+
+  return password;
+}
+
+const googleLogin: RequestHandler = catchAsync(async (req, res, next) => {
+  const user = await UserModel.findOne({ email: req.body.email });
+
+  if (user) {
+    createSendJWT(user, 200, res, true);
+  } else {
+    const body = req.body as User;
+
+    const password = generateRandomPassword(12);
+
+    const userData = {
+      name: body.name,
+      email: body.email,
+      password: password,
+      passwordConfirm: password,
+      picture: body.picture,
+    };
+
+    const user = await UserModel.create(userData);
+
+    createSendJWT(user, 201, res, true);
+  }
+});
 
 const signup: RequestHandler = catchAsync(async (req, res, next) => {
   const body = req.body as User;
@@ -64,14 +89,6 @@ const signup: RequestHandler = catchAsync(async (req, res, next) => {
 });
 
 const logout: RequestHandler = (req, res, next) => {
-  const cookieConfig: CookieOptions = {
-    path: "/",
-    domain: "localhost",
-    secure: true,
-    httpOnly: true,
-    sameSite: "none",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  };
   res.clearCookie("refresh_token", cookieConfig);
   res.sendStatus(204);
 };
@@ -158,7 +175,7 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
 
   const decodedJWT = jwt.verify(
     token,
-    process.env.JWT_SECRET || ""
+    process.env.JWT_SECRET as string
   ) as jwt.JwtPayload;
   const user = await UserModel.findById(decodedJWT.id);
 
@@ -183,4 +200,4 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
   next();
 });
 
-export { signup, login, protect, refresh,logout };
+export { signup, login, protect, refresh, logout, googleLogin };

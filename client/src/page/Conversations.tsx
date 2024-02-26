@@ -69,18 +69,22 @@ export const Conversations = () => {
   }, [isSuccess]);
 
   useEffect(() => {
-    socket = io("http://localhost:3000/");
-    socket.emit("connected", { userId: user?._id });
-    socket.on("receiveMessage", (data: Message) => {
-      //@ts-ignore
-      dispatch(addNewMessage(data, data.conversation._id as string));
-      //@ts-ignore
-      dispatch(updateLastMsg(data, data.conversation._id as string));
-    });
-    socket.on("receiveNewConversation", (data: Conversation) => {
-      //@ts-ignore
-      dispatch(addNewConversation(data));
-    });
+    const API_URL = process.env.REACT_APP_API_URL;
+    if (API_URL) {
+      socket = io(API_URL);
+      socket.emit("connected", { userId: user?._id });
+      socket.on("receiveMessage", (data: Message) => {
+        //@ts-ignore
+        dispatch(addNewMessage(data, data.conversation._id as string));
+        //@ts-ignore
+        dispatch(updateLastMsg(data, data.conversation._id as string));
+      });
+      socket.on("receiveNewConversation", (data: Conversation) => {
+        console.log(data);
+        //@ts-ignore
+        dispatch(addNewConversation(data));
+      });
+    }
   }, []);
 
   const handleOpenCreateBox = () => {
@@ -141,7 +145,7 @@ export const Conversations = () => {
                 </IconButton>
                 <IconButton onClick={handleMenuClick}>
                   <UserAvatar
-                    name={user?.name}
+                    user={user}
                     height={40}
                     width={40}
                     sx={{ curosr: "pointer", ml: "10px" }}
@@ -210,6 +214,7 @@ export const Conversations = () => {
         open={openCreateBox}
       />
       <CreateConversationGroup
+        socket={socket}
         setOpen={setOpenCreateGroupBox}
         open={openCreateGroupBox}
       />

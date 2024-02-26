@@ -1,22 +1,19 @@
-import {
-  Alert,
-  Snackbar,
-  Button,
-  FormControl,
-  Grid,
-  Paper,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { FormControl, Grid, Paper, TextField, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { Google } from "@mui/icons-material";
 import { emailPattern, passwordLength, setRequired } from "../validation";
 import { Link, useNavigate } from "react-router-dom";
-import { useLoginMutation } from "../store/slices/api/endpoints/auth.endpoints";
-import { useState } from "react";
+import {
+  useGoogleAuthMutation,
+  useLoginMutation,
+} from "../store/slices/api/endpoints/auth.endpoints";
+import { useEffect, useState } from "react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { useDispatch } from "react-redux";
 import { setAuth } from "../store/slices/auth.slice";
+import ErrorSnackbar from "../components/others/ErrorSnackbar";
+import { useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
+import { Google } from "@mui/icons-material";
 
 interface FormValue {
   email: string;
@@ -24,13 +21,61 @@ interface FormValue {
 }
 
 export const Login = () => {
+  const [ggToken, setGgToken] = useState("");
   const form = useForm<FormValue>();
   const { formState, handleSubmit, register } = form;
   const { isValid, errors } = formState;
-  const [login, { isLoading, error }] = useLoginMutation();
+  const [login, loginAuthMutation] = useLoginMutation();
+  const [googleAuth, googleAuthMutation] = useGoogleAuthMutation();
   const [showSnackBar, setShowSnackBar] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("Something went wrong");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const errorMessage = () => {};
+
+  const ggLogin = useGoogleLogin({
+    onSuccess: (res) => {
+      setGgToken(res.access_token);
+    },
+    onError: errorMessage,
+  });
+
+  const googleLogin = async (token: string) => {
+    try {
+      const { data } = await axios.get(
+        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const body = {
+        name: data.name,
+        email: data.email,
+        picture: data.picture,
+      };
+
+      const loginRes = await googleAuth(body).unwrap();
+      dispatch(setAuth({ access_token: loginRes.token, user: loginRes.data }));
+      navigate("/conversations");
+    } catch (error) {
+      setShowSnackBar(true);
+      setErrorMsg(
+        (error as { data: { message: string } })?.data?.message ||
+          "Something went wrong"
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (ggToken) {
+      googleLogin(ggToken);
+    }
+  }, [ggToken]);
 
   const onSubmit = async (values: FormValue) => {
     try {
@@ -39,18 +84,8 @@ export const Login = () => {
       navigate("/conversations");
     } catch (error) {
       setShowSnackBar(true);
+      setErrorMsg((error as { data: { message: string } })?.data?.message);
     }
-  };
-
-  const handleSnackBarClose = (
-    _?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setShowSnackBar(false);
   };
 
   return (
@@ -64,21 +99,12 @@ export const Login = () => {
         alignContent={"center"}
         justifyContent={"center"}
       >
-        <Snackbar
-          anchorOrigin={{ horizontal: "center", vertical: "top" }}
-          open={showSnackBar}
-          autoHideDuration={5000}
-          onClose={handleSnackBarClose}
-        >
-          <Alert
-            onClose={handleSnackBarClose}
-            severity="error"
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {(error as { data: { message: string } })?.data?.message}
-          </Alert>
-        </Snackbar>
+        <ErrorSnackbar
+          show={showSnackBar}
+          setShow={setShowSnackBar}
+          msg={errorMsg}
+        />
+
         <Paper
           sx={{ width: 350, p: "15px", borderRadius: "10px", bgcolor: "white" }}
         >
@@ -114,7 +140,7 @@ export const Login = () => {
             <LoadingButton
               variant="contained"
               sx={{ py: "10px" }}
-              loading={isLoading}
+              loading={loginAuthMutation.isLoading}
               onClick={handleSubmit(onSubmit)}
               type="submit"
               disabled={!isValid}
@@ -129,14 +155,21 @@ export const Login = () => {
           >
             Or Continue with
           </Typography>
-          <Button
+          <LoadingButton
             variant="outlined"
             sx={{ width: "100%" }}
             startIcon={<Google />}
             color="success"
+            disabled={
+              loginAuthMutation.isLoading || googleAuthMutation.isLoading
+            }
+            loading={googleAuthMutation.isLoading}
+            onClick={() => {
+              ggLogin();
+            }}
           >
             GOOGLE
-          </Button>
+          </LoadingButton>
         </Paper>
       </Grid>
     </>

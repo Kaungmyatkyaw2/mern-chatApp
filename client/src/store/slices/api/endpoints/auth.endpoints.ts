@@ -21,6 +21,13 @@ const endpoints = ApiSlice.injectEndpoints({
         body,
       }),
     }),
+    googleAuth: builder.mutation<LoginReturnType, any>({
+      query: (body) => ({
+        url: "users/google",
+        method: "POST",
+        body,
+      }),
+    }),
     getMe: builder.query<QueryResponse<User>, void>({
       query: () => "users/getMe",
     }),
@@ -38,4 +45,5 @@ export const {
   useSignupMutation,
   useGetMeQuery,
   useLogoutMutation,
+  useGoogleAuthMutation,
 } = endpoints;
