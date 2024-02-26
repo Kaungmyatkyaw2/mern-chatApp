@@ -30,6 +30,7 @@ const endpoints = ApiSlice.injectEndpoints({
     }),
     getMe: builder.query<QueryResponse<User>, void>({
       query: () => "users/getMe",
+      keepUnusedDataFor: 0,
     }),
     logout: builder.mutation<LoginReturnType, void>({
       query: () => ({

@@ -18,7 +18,9 @@ const expressServer = app.listen(PORT, () => {
 });
 
 const io = new Server(expressServer, {
-  cors: { origin: [process.env.CLIENT_PRODUCTION_URL || "http://localhost:5173"] },
+  cors: {
+    origin: [process.env.CLIENT_PRODUCTION_URL || "http://localhost:5173"],
+  },
 });
 
 io.on("connection", (socket) => {
@@ -37,7 +39,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("createConversation", (data: Conversation) => {
-    console.log(data);
     data.members.forEach((el) => {
       const isString = typeof el == "string";
 

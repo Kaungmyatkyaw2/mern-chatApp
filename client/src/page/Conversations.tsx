@@ -80,7 +80,6 @@ export const Conversations = () => {
         dispatch(updateLastMsg(data, data.conversation._id as string));
       });
       socket.on("receiveNewConversation", (data: Conversation) => {
-        console.log(data);
         //@ts-ignore
         dispatch(addNewConversation(data));
       });
