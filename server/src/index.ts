@@ -18,7 +18,7 @@ const expressServer = app.listen(PORT, () => {
 });
 
 const io = new Server(expressServer, {
-  cors: { origin: ["http://localhost:5173"] },
+  cors: { origin: [process.env.CLIENT_PRODUCTION_URL || "http://localhost:5173"] },
 });
 
 io.on("connection", (socket) => {
