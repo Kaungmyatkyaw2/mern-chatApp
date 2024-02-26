@@ -161,7 +161,7 @@ export const Chat = () => {
               sx={{
                 height: {
                   md: "calc(100% - 152px)",
-                  xs: "calc(100% - 182px)",
+                  xs: "calc(100% - 202px)",
                 },
                 overflowY: "scroll",
                 px: "20px",
