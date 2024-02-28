@@ -10,10 +10,13 @@ import {
   Typography,
 } from "@mui/material";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Logout, Person, PersonAdd } from "@mui/icons-material";
 import {
   addNewConversation,
+  deleteConversation,
+  updateConversations,
+  updateConversation,
   updateLastMsg,
   useGetConversationsQuery,
 } from "../store/slices/api/endpoints/conversation.endpoints";
@@ -33,12 +36,14 @@ import UserAvatar from "../components/conversation/UserAvatar";
 import { setConversation } from "../store/slices/conversation.slice";
 import { useLogoutMutation } from "../store/slices/api/endpoints/auth.endpoints";
 import NoData from "../components/others/NoData";
+import { ApiSlice } from "../store/slices/api/api.slice";
 
 let socket: undefined | Socket;
 
 export const Conversations = () => {
   const location = useLocation();
   const isInChat = !location.pathname.endsWith("conversations");
+  const { id } = useParams();
 
   const { data, isLoading, isSuccess } = useGetConversationsQuery();
   const conversations = data?.data || [];
@@ -53,14 +58,6 @@ export const Conversations = () => {
 
   const [logout] = useLogoutMutation();
   const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await logout().unwrap();
-      dispatch(logOut());
-      navigate("/login");
-    } catch {}
-  };
 
   useEffect(() => {
     if (isSuccess) {
@@ -83,6 +80,20 @@ export const Conversations = () => {
         //@ts-ignore
         dispatch(addNewConversation(data));
       });
+      socket.on("receiveDeleteConversation", (data: Conversation) => {
+        if (id == data._id) {
+          navigate("/conversations");
+        }
+        //@ts-ignore
+        dispatch(deleteConversation(data));
+      });
+
+      socket.on("receiveUpdatedConversation", (data: Conversation) => {
+        //@ts-ignore
+        dispatch(updateConversations(data));
+        //@ts-ignore
+        dispatch(updateConversation(data));
+      });
     }
   }, []);
 
@@ -96,8 +107,17 @@ export const Conversations = () => {
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      dispatch(logOut());
+      dispatch(ApiSlice.util.resetApiState());
+      navigate("/login");
+    } catch {}
   };
 
   return (
@@ -150,7 +170,7 @@ export const Conversations = () => {
                     sx={{ curosr: "pointer", ml: "10px" }}
                   />
                 </IconButton>
-                <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+                <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
                   <MenuItem>
                     <ListItemIcon>
                       <Person fontSize="small" />

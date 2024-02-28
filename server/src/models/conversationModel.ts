@@ -5,8 +5,8 @@ import { Message } from "./messageModel";
 export interface Conversation extends Document {
   _id: string;
   name: string;
-  members: Array<String> | Array<User>;
-  admins: Array<String> | Array<User>;
+  members: (string | User)[];
+  admins: (string | User)[];
   isGroup: boolean;
   createdAt: Date;
   lastMessage?: Message | string;

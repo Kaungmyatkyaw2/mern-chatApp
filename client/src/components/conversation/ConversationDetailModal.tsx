@@ -8,7 +8,7 @@ import React from "react";
 
 interface Props {
   open: boolean;
-  conversation?: Conversation;
+  conversation: Conversation | undefined;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 

@@ -25,7 +25,7 @@ import { Conversation } from "../../types/conversations.types";
 interface Props {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  socket?: Socket;
+  socket: Socket | undefined;
 }
 
 const checkIsAlreadyInChat = (

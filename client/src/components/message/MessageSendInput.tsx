@@ -2,14 +2,17 @@ import { LoadingButton } from "@mui/lab";
 import { Box, IconButton, TextField } from "@mui/material";
 import { useCreateMessageMutation } from "../../store/slices/api/endpoints/message.endpoints";
 import { Socket } from "socket.io-client";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { EmojiEmotions, Send } from "@mui/icons-material";
 import EmojiPicker from "emoji-picker-react";
 
-export const MessageSendInput = () => {
+export const MessageSendInput = ({
+  socket,
+}: {
+  socket: Socket | undefined;
+}) => {
   const { id } = useParams();
-  const { socket } = useOutletContext<{ socket: Socket | null }>();
   const [message, setMessage] = useState("");
   const [ejBoxOpen, setEjBoxOpen] = useState(false);
   const [sendMessage, createMessageMutation] = useCreateMessageMutation();

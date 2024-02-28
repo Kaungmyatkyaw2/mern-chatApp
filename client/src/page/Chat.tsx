@@ -9,6 +9,9 @@ import { useEffect, useRef, useState } from "react";
 import { MessageCard, MessageSendInput } from "../components/message";
 import GroupAvatar from "../components/conversation/GroupAvatar";
 import { ConversationDetailModal } from "../components/conversation";
+import { ConversationMenu } from "../components/conversation";
+import { useOutletContext } from "react-router-dom";
+import { Socket } from "socket.io-client";
 
 const ChatLoading = () => {
   return (
@@ -36,6 +39,7 @@ export const Chat = () => {
   const otherUser = useGetMember(conversationQuery.data?.data);
   const messagesQuery = useGetMessagesQuery({ id: id as string, page });
   const navigate = useNavigate();
+  const { socket } = useOutletContext<{ socket: Socket | undefined }>();
 
   const conversation = conversationQuery.data?.data;
   const messages = messagesQuery.data?.data;
@@ -149,13 +153,16 @@ export const Chat = () => {
                   <Typography fontSize={"13px"}>Active</Typography>
                 </Box>
               </Box>
-              <IconButton
-                onClick={() => {
-                  navigate("/conversations");
-                }}
-              >
-                <ArrowBack />
-              </IconButton>
+              <Box>
+                <IconButton
+                  onClick={() => {
+                    navigate("/conversations");
+                  }}
+                >
+                  <ArrowBack />
+                </IconButton>
+                <ConversationMenu socket={socket} conversation={conversation} />
+              </Box>
             </Box>
             <Box
               sx={{
@@ -183,7 +190,7 @@ export const Chat = () => {
                 <div ref={chatEndDisplay} />
               </Box>
             </Box>
-            <MessageSendInput />
+            <MessageSendInput socket={socket} />
           </>
         )}
       </Box>

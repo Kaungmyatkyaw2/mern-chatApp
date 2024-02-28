@@ -16,7 +16,12 @@ Router.route("/")
     conversationController.CollectMebersId,
     conversationController.createConversation
   );
-Router.route("/:id").get(conversationController.getConversation);
+Router.route("/:id")
+  .get(conversationController.getConversation)
+  .delete(conversationController.deleteConversation);
+
+Router.route("/:id/members").delete(conversationController.leaveConversation);
+
 Router.use("/:conversation/messages", messageRouter);
 
 export default Router;

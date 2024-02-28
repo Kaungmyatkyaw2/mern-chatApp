@@ -5,7 +5,7 @@ export interface Conversation {
   _id: string;
   name: string;
   members: User[];
-  admins: User[];
+  admins: string[];
   isGroup: boolean;
   createdAt: Date;
   lastMessage?: Message;

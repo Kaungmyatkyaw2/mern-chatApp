@@ -12,6 +12,13 @@ const ConversationEndpoints = ApiSlice.injectEndpoints({
     getConversation: builder.query<QueryResponse<Conversation>, string>({
       query: (id) => `conversations/${id}`,
     }),
+    deleteConversation: builder.mutation<QueryResponse<null>, string>({
+      query: (id) => ({
+        url: `conversations/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Conversations"],
+    }),
     createConversation: builder.mutation<QueryResponse<Conversation>, any>({
       query: (body) => ({
         url: "conversations",
@@ -19,6 +26,12 @@ const ConversationEndpoints = ApiSlice.injectEndpoints({
         body,
       }),
       invalidatesTags: ["Conversations"],
+    }),
+    leaveConversation: builder.mutation<QueryResponse<Conversation>, string>({
+      query: (convId) => ({
+        url: `conversations/${convId}/members`,
+        method: "DELETE",
+      }),
     }),
   }),
 });
@@ -33,6 +46,27 @@ export const updateLastMsg = (lastMsg: Message, conversationId: string) =>
       );
     }
   );
+
+export const updateConversation = (conversation: Conversation) =>
+  ConversationEndpoints.util.updateQueryData(
+    "getConversation",
+    conversation._id,
+    (draft) => {
+      draft.data = conversation;
+    }
+  );
+
+export const updateConversations = (conversation: Conversation) =>
+  ConversationEndpoints.util.updateQueryData(
+    "getConversations",
+    undefined,
+    (draft) => {
+      draft.data = draft.data.map((el) =>
+        el._id == conversation._id ? conversation : el
+      );
+    }
+  );
+
 export const addNewConversation = (conversation: Conversation) =>
   ConversationEndpoints.util.updateQueryData(
     "getConversations",
@@ -45,8 +79,19 @@ export const addNewConversation = (conversation: Conversation) =>
     }
   );
 
+export const deleteConversation = (conversation: Conversation) =>
+  ConversationEndpoints.util.updateQueryData(
+    "getConversations",
+    undefined,
+    (draft) => {
+      draft.data = draft.data.filter((el) => el._id !== conversation._id);
+    }
+  );
+
 export const {
   useGetConversationsQuery,
   useCreateConversationMutation,
   useGetConversationQuery,
+  useDeleteConversationMutation,
+  useLeaveConversationMutation,
 } = ConversationEndpoints;

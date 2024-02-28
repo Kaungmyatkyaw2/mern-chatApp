@@ -27,10 +27,10 @@ import { Socket } from "socket.io-client";
 interface Props {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  socket?: Socket;
+  socket: Socket | undefined;
 }
 
-export const CreateConversationGroup = ({ open, setOpen }: Props) => {
+export const CreateConversationGroup = ({ open, setOpen, socket }: Props) => {
   const me = useSelector(getUser);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -87,6 +87,7 @@ export const CreateConversationGroup = ({ open, setOpen }: Props) => {
         name,
         isGroup: true,
       }).unwrap();
+      socket?.emit("createConversation", res.data);
       setOpen(false);
       navigate(`/conversations/${res.data._id}`);
     } catch {
@@ -142,6 +143,7 @@ export const CreateConversationGroup = ({ open, setOpen }: Props) => {
             {members.map((el) => (
               <Chip
                 label={el.name}
+                key={el._id}
                 avatar={<UserAvatar user={el} />}
                 onDelete={() => {
                   setMembers((prev) =>

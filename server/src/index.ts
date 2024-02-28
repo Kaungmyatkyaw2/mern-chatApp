@@ -41,9 +41,21 @@ io.on("connection", (socket) => {
   socket.on("createConversation", (data: Conversation) => {
     data.members.forEach((el) => {
       const isString = typeof el == "string";
-
-      //@ts-ignore
       io.to(isString ? el : el._id).emit("receiveNewConversation", data);
+    });
+  });
+
+  socket.on("deleteConversation", (data: Conversation) => {
+    data.members.forEach((el) => {
+      const isString = typeof el == "string";
+      io.to(isString ? el : el._id).emit("receiveDeleteConversation", data);
+    });
+  });
+
+  socket.on("leaveConversation", (data: Conversation) => {
+    data.members.forEach((el) => {
+      const isString = typeof el == "string";
+      io.to(isString ? el : el._id).emit("receiveUpdatedConversation", data);
     });
   });
 });
