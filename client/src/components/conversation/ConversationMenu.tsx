@@ -1,4 +1,4 @@
-import { Delete, Logout, MoreHoriz } from "@mui/icons-material";
+import { Add, Delete, Logout, MoreHoriz } from "@mui/icons-material";
 import {
   IconButton,
   ListItemIcon,
@@ -13,6 +13,7 @@ import { Socket } from "socket.io-client";
 import { useSelector } from "react-redux";
 import { getUser } from "../../store/slices/auth.slice";
 import { LeaveConversation } from "./LeaveConversationDialog";
+import { AddMemberToConversationGroup } from "./AddMemberToConversationGroup";
 
 interface Props {
   conversation: Conversation | undefined;
@@ -24,12 +25,13 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
   const open = Boolean(anchorEl);
   const [deletDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const admins = conversation?.admins;
   const me = useSelector(getUser);
   const isMeAdmin = admins?.some((el) => el == me?._id);
 
-  const showDeleteBtn = conversation?.isGroup ? isMeAdmin : true;
+  const showAdminBtns = conversation?.isGroup ? isMeAdmin : true;
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -52,11 +54,18 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
         setOpen={setLeaveDialogOpen}
         conversation={conversation}
       />
+
+      <AddMemberToConversationGroup
+        socket={socket}
+        open={addDialogOpen}
+        setOpen={setAddDialogOpen}
+        conversation={conversation}
+      />
       <IconButton onClick={handleMenuClick}>
         <MoreHoriz />
       </IconButton>
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-        {showDeleteBtn && (
+        {showAdminBtns && (
           <MenuItem
             onClick={() => {
               setDeleteDialogOpen(true);
@@ -66,6 +75,19 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
               <Delete fontSize="small" />
             </ListItemIcon>
             <ListItemText>Delete</ListItemText>
+          </MenuItem>
+        )}
+
+        {showAdminBtns && (
+          <MenuItem
+            onClick={() => {
+              setAddDialogOpen(true);
+            }}
+          >
+            <ListItemIcon>
+              <Add fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Add Member</ListItemText>
           </MenuItem>
         )}
         <MenuItem

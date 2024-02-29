@@ -20,7 +20,9 @@ Router.route("/:id")
   .get(conversationController.getConversation)
   .delete(conversationController.deleteConversation);
 
-Router.route("/:id/members").delete(conversationController.leaveConversation);
+Router.route("/:id/members")
+  .post(conversationController.addMember)
+  .delete(conversationController.leaveConversation);
 
 Router.use("/:conversation/messages", messageRouter);
 

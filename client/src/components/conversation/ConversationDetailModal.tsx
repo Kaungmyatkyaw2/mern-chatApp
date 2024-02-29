@@ -87,7 +87,7 @@ export const ConversationDetailModal = ({
             {conversation.members?.map((el) => (
               <UserCard
                 onClick={() => {}}
-                customText={"Members"}
+                customText={"Member"}
                 user={el}
                 key={el._id}
               />

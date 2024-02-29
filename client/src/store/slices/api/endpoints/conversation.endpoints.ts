@@ -33,6 +33,16 @@ const ConversationEndpoints = ApiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    addMember: builder.mutation<
+      QueryResponse<Conversation>,
+      { convId: string; member: string }
+    >({
+      query: ({ convId, member }) => ({
+        url: `conversations/${convId}/members`,
+        body: { member },
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -94,4 +104,5 @@ export const {
   useGetConversationQuery,
   useDeleteConversationMutation,
   useLeaveConversationMutation,
+  useAddMemberMutation,
 } = ConversationEndpoints;

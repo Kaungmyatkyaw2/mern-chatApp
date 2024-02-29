@@ -166,10 +166,7 @@ export const Chat = () => {
             </Box>
             <Box
               sx={{
-                height: {
-                  md: "calc(100% - 152px)",
-                  xs: "calc(100% - 202px)",
-                },
+                height: "calc(100% - 152px)",
                 overflowY: "scroll",
                 px: "20px",
               }}
