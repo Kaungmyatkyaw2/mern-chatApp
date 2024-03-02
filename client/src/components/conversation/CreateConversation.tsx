@@ -51,6 +51,7 @@ export const CreateConversation = ({ open, setOpen, socket }: Props) => {
   const getUsersQuery = useGetUsersQuery(email || "", {
     skip: !email,
   });
+
   const users = !email ? [] : getUsersQuery.data?.data;
 
   const conversations = useSelector(getConversations);
@@ -133,7 +134,11 @@ export const CreateConversation = ({ open, setOpen, socket }: Props) => {
             ) : (
               users?.map((el: User) => (
                 <UserCard
-                  disabled={createConversationMutation.isLoading}
+                  disabled={
+                    createConversationMutation.isLoading &&
+                    createConversationMutation.originalArgs.members[0] ==
+                      el.email
+                  }
                   onClick={() => {
                     handleCreate(el);
                   }}

@@ -120,7 +120,10 @@ export const AddMemberToConversationGroup = ({
             ) : (
               users?.map((el: User) => (
                 <UserCard
-                  disabled={addToConversationMutation.isLoading}
+                  disabled={
+                    addToConversationMutation.isLoading &&
+                    addToConversationMutation.originalArgs?.member == el._id
+                  }
                   onClick={() => {
                     handleCreate(el);
                   }}

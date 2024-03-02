@@ -31,7 +31,7 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
   const me = useSelector(getUser);
   const isMeAdmin = admins?.some((el) => el == me?._id);
 
-  const showAdminBtns = conversation?.isGroup ? isMeAdmin : true;
+  const showAdminBtns = conversation?.isGroup && isMeAdmin;
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -65,7 +65,7 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
         <MoreHoriz />
       </IconButton>
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-        {showAdminBtns && (
+        {(!conversation?.isGroup || showAdminBtns) && (
           <MenuItem
             onClick={() => {
               setDeleteDialogOpen(true);
@@ -90,16 +90,18 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
             <ListItemText>Add Member</ListItemText>
           </MenuItem>
         )}
-        <MenuItem
-          onClick={() => {
-            setLeaveDialogOpen(true);
-          }}
-        >
-          <ListItemIcon>
-            <Logout fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Leave</ListItemText>
-        </MenuItem>
+        {conversation?.isGroup && (
+          <MenuItem
+            onClick={() => {
+              setLeaveDialogOpen(true);
+            }}
+          >
+            <ListItemIcon>
+              <Logout fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Leave</ListItemText>
+          </MenuItem>
+        )}
       </Menu>
     </>
   );
