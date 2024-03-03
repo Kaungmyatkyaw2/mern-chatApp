@@ -43,6 +43,16 @@ const ConversationEndpoints = ApiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
+    addAdmin: builder.mutation<
+      QueryResponse<Conversation>,
+      { convId: string; admin: string }
+    >({
+      query: ({ convId, admin }) => ({
+        url: `conversations/${convId}/admins`,
+        body: { admin },
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -105,4 +115,5 @@ export const {
   useDeleteConversationMutation,
   useLeaveConversationMutation,
   useAddMemberMutation,
+  useAddAdminMutation,
 } = ConversationEndpoints;

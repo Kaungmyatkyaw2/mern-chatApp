@@ -97,6 +97,7 @@ export const Chat = () => {
   return (
     <>
       <ConversationDetailModal
+        socket={socket}
         conversation={conversation}
         open={detailModalOpen}
         setOpen={setDetailModalOpen}

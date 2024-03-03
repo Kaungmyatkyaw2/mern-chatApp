@@ -24,6 +24,10 @@ Router.route("/:id/members")
   .post(conversationController.addMember)
   .delete(conversationController.leaveConversation);
 
+Router.route("/:id/admins")
+  .post(conversationController.addAdmin)
+  .delete(conversationController.leaveConversation);
+
 Router.use("/:conversation/messages", messageRouter);
 
 export default Router;

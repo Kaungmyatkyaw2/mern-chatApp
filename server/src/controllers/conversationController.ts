@@ -198,7 +198,6 @@ const leaveConversation: RequestHandler = catchAsync(async (req, res, next) => {
 const addMember: RequestHandler = catchAsync(async (req, res, next) => {
   const id = req.params.id;
 
-  console.log(id);
   let conv = await ConversationModel.findById(id);
 
   if (!conv) {
@@ -229,6 +228,39 @@ const addMember: RequestHandler = catchAsync(async (req, res, next) => {
   });
 });
 
+const addAdmin: RequestHandler = catchAsync(async (req, res, next) => {
+  const id = req.params.id;
+
+  let conv = await ConversationModel.findById(id);
+
+  if (!conv) {
+    return next(new AppError("No conversation is found with this id!", 404));
+  }
+
+  const isMeAdmin = conv.admins?.some((el) => el.toString() == req.user?._id);
+
+  if (!isMeAdmin) {
+    return next(
+      new AppError("You don't have permission to perform this request!", 403)
+    );
+  }
+
+  conv.admins = [...conv.admins, req.body.admin];
+
+  await conv.save({ validateBeforeSave: false });
+  conv = await conv.populate({
+    path: "members",
+    options: {
+      sort: "createdAt",
+    },
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: conv,
+  });
+});
+
 export {
   getConversation,
   createConversation,
@@ -239,4 +271,5 @@ export {
   deleteConversation,
   leaveConversation,
   addMember,
+  addAdmin,
 };
