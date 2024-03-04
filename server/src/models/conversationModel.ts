@@ -10,6 +10,7 @@ export interface Conversation extends Document {
   isGroup: boolean;
   createdAt: Date;
   lastMessage?: Message | string;
+  lastMsgAt: number;
 }
 
 const conversationSchema = new Schema<Conversation>(
@@ -37,6 +38,10 @@ const conversationSchema = new Schema<Conversation>(
     isGroup: {
       type: Boolean,
       default: false,
+    },
+    lastMsgAt: {
+      type: Number,
+      default: 0,
     },
   },
   {

@@ -8,8 +8,6 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-console.log(process.env.CLIENT_PRODUCTION_URL);
-
 app.use(
   cors({
     origin: process.env.CLIENT_PRODUCTION_URL || "http://localhost:5173",

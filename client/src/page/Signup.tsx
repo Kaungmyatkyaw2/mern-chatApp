@@ -30,7 +30,7 @@ export const Signup = () => {
   const { formState, handleSubmit, register } = form;
   const { isValid, errors } = formState;
   const [signup, { error, isLoading }] = useSignupMutation();
-  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [showError, setShowError] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -40,7 +40,7 @@ export const Signup = () => {
       dispatch(setAuth({ access_token: res.token, user: res.data }));
       navigate("/conversations");
     } catch (error) {
-      setShowSnackBar(true);
+      setShowError(true);
     }
   };
 
@@ -56,8 +56,8 @@ export const Signup = () => {
         justifyContent={"center"}
       >
         <ErrorSnackbar
-          show={showSnackBar}
-          setShow={setShowSnackBar}
+          show={showError}
+          setShow={setShowError}
           msg={(error as { data: { message: string } })?.data?.message}
         />
 

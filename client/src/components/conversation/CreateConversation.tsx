@@ -45,7 +45,7 @@ const checkIsAlreadyInChat = (
 export const CreateConversation = ({ open, setOpen, socket }: Props) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [showError, setShowError] = useState(false);
   const [createConversation, createConversationMutation] =
     useCreateConversationMutation();
   const getUsersQuery = useGetUsersQuery(email || "", {
@@ -87,15 +87,15 @@ export const CreateConversation = ({ open, setOpen, socket }: Props) => {
         }
       }
     } catch {
-      setShowSnackBar(true);
+      setShowError(true);
     }
   };
 
   return (
     <>
       <ErrorSnackbar
-        show={showSnackBar}
-        setShow={setShowSnackBar}
+        show={showError}
+        setShow={setShowError}
         msg={
           (createConversationMutation.error as { data: { message: string } })
             ?.data?.message

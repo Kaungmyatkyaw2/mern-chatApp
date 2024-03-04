@@ -19,6 +19,17 @@ const ConversationEndpoints = ApiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Conversations"],
     }),
+    updateConversation: builder.mutation<
+      QueryResponse<Conversation>,
+      { id: string; body: { name: string } }
+    >({
+      query: ({ id, body }) => ({
+        url: `conversations/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Conversations"],
+    }),
     createConversation: builder.mutation<QueryResponse<Conversation>, any>({
       query: (body) => ({
         url: "conversations",
@@ -116,4 +127,5 @@ export const {
   useLeaveConversationMutation,
   useAddMemberMutation,
   useAddAdminMutation,
+  useUpdateConversationMutation,
 } = ConversationEndpoints;

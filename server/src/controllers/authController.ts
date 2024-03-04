@@ -117,6 +117,32 @@ const login: RequestHandler = catchAsync(async (req, res, next) => {
   createSendJWT(user, 200, res, true);
 });
 
+const updatePassword: RequestHandler = catchAsync(async (req, res, next) => {
+  const { password, passwordConfirm, oldPassword } = req.body;
+
+  const user = await UserModel.findById(req.user?._id).select("+password");
+
+  if (!user) {
+    return next(new AppError("This user is no longer exist.", 400));
+  }
+
+  const isPasswordCorrect = await user.checkPasswordCorrect(
+    oldPassword,
+    user.password
+  );
+
+  if (!isPasswordCorrect) {
+    return next(new AppError("Incorrect Password!", 401));
+  }
+
+  user.password = password;
+  user.passwordConfirm = passwordConfirm;
+
+  await user.save();
+
+  createSendJWT(user, 200, res,true);
+});
+
 const refresh: RequestHandler = catchAsync(async (req, res, next) => {
   const cookies = req.cookies;
 
@@ -200,4 +226,4 @@ const protect: RequestHandler = catchAsync(async (req, res, next) => {
   next();
 });
 
-export { signup, login, protect, refresh, logout, googleLogin };
+export { signup, login, protect, refresh, logout, googleLogin, updatePassword };

@@ -16,7 +16,7 @@ const createMessage = catchAsync(async (req, res, next) => {
 
   await ConversationModel.updateOne(
     { _id: data.conversation },
-    { lastMessage: data._id }
+    { lastMessage: data._id, lastMsgAt: data.createdAt.getTime() }
   );
 
   res.status(201).json({

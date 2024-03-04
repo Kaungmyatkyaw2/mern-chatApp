@@ -27,7 +27,7 @@ export const Login = () => {
   const { isValid, errors } = formState;
   const [login, loginAuthMutation] = useLoginMutation();
   const [googleAuth, googleAuthMutation] = useGoogleAuthMutation();
-  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [showSError, setShowSError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("Something went wrong");
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ export const Login = () => {
       dispatch(setAuth({ access_token: loginRes.token, user: loginRes.data }));
       navigate("/conversations");
     } catch (error) {
-      setShowSnackBar(true);
+      setShowSError(true);
       setErrorMsg(
         (error as { data: { message: string } })?.data?.message ||
           "Something went wrong"
@@ -83,7 +83,7 @@ export const Login = () => {
       dispatch(setAuth({ access_token: res.token, user: res.data }));
       navigate("/conversations");
     } catch (error) {
-      setShowSnackBar(true);
+      setShowSError(true);
       setErrorMsg((error as { data: { message: string } })?.data?.message);
     }
   };
@@ -100,8 +100,8 @@ export const Login = () => {
         justifyContent={"center"}
       >
         <ErrorSnackbar
-          show={showSnackBar}
-          setShow={setShowSnackBar}
+          show={showSError}
+          setShow={setShowSError}
           msg={errorMsg}
         />
 

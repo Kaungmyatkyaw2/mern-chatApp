@@ -4,3 +4,4 @@ export * from "./Conversations";
 export * from "./Chat";
 export * from "./ChatHome";
 export * from "./Home";
+export * from "./Profile";

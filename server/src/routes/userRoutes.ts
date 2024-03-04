@@ -12,7 +12,10 @@ Router.get("/refresh", authController.refresh);
 
 Router.use(authController.protect);
 Router.route("/").get(userController.getUsers);
-Router.get("/getMe", userController.setUserId, userController.getUser);
+Router.route("/me")
+  .get(userController.setUserId, userController.getUser)
+  .patch(userController.updateMe);
+Router.patch("/updateMyPassword", authController.updatePassword);
 Router.get("/search", userController.getUsersBySearching);
 
 export default Router;

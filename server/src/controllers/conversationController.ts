@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import { getOne } from "./handlerFactory";
 import { Conversation, ConversationModel } from "../models/conversationModel";
 import { catchAsync } from "../utils/catchAsync";
@@ -169,8 +169,6 @@ const leaveConversation: RequestHandler = catchAsync(async (req, res, next) => {
     return next(new AppError("No conversation is found with this id!", 404));
   }
 
-  // const isMeAdmin = conv.admins?.some((el) => el.toString() == req.user?._id);
-
   const filterMember = (i: string | User) =>
     i.toString() !== req.user?._id.toString();
 
@@ -195,70 +193,64 @@ const leaveConversation: RequestHandler = catchAsync(async (req, res, next) => {
   });
 });
 
-const addMember: RequestHandler = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
+// Admin Access Methods
 
-  let conv = await ConversationModel.findById(id);
+type MutateConv = (
+  conv: Conversation,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => void;
 
-  if (!conv) {
-    return next(new AppError("No conversation is found with this id!", 404));
+const updateConvIsAdmin = (fn: MutateConv) =>
+  catchAsync(async (req, res, next) => {
+    const id = req.params.id;
+
+    let conv = await ConversationModel.findById(id);
+
+    if (!conv) {
+      return next(new AppError("No conversation is found with this id!", 404));
+    }
+
+    const isMeAdmin = conv.admins?.some((el) => el.toString() == req.user?._id);
+
+    if (!isMeAdmin) {
+      return next(
+        new AppError("You don't have permission to perform this request!", 403)
+      );
+    }
+
+    fn(conv, req, res, next);
+
+    await conv.save({ validateBeforeSave: false });
+    conv = await conv.populate({
+      path: "members",
+      options: {
+        sort: "createdAt",
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      data: conv,
+    });
+  });
+
+const updateConversation: RequestHandler = updateConvIsAdmin(
+  (conv, req, _, next) => {
+    if (!req.body.name) {
+      return next(new AppError("Please provide required info!", 400));
+    }
+    conv.name = req.body.name;
   }
+);
 
-  const isMeAdmin = conv.admins?.some((el) => el.toString() == req.user?._id);
-
-  if (!isMeAdmin) {
-    return next(
-      new AppError("You don't have permission to perform this request!", 403)
-    );
-  }
-
+const addMember: RequestHandler = updateConvIsAdmin((conv, req) => {
   conv.members = [...conv.members, req.body.member];
-
-  await conv.save({ validateBeforeSave: false });
-  conv = await conv.populate({
-    path: "members",
-    options: {
-      sort: "createdAt",
-    },
-  });
-
-  res.status(200).json({
-    status: "success",
-    data: conv,
-  });
 });
 
-const addAdmin: RequestHandler = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-
-  let conv = await ConversationModel.findById(id);
-
-  if (!conv) {
-    return next(new AppError("No conversation is found with this id!", 404));
-  }
-
-  const isMeAdmin = conv.admins?.some((el) => el.toString() == req.user?._id);
-
-  if (!isMeAdmin) {
-    return next(
-      new AppError("You don't have permission to perform this request!", 403)
-    );
-  }
-
+const addAdmin: RequestHandler = updateConvIsAdmin((conv, req) => {
   conv.admins = [...conv.admins, req.body.admin];
-
-  await conv.save({ validateBeforeSave: false });
-  conv = await conv.populate({
-    path: "members",
-    options: {
-      sort: "createdAt",
-    },
-  });
-
-  res.status(200).json({
-    status: "success",
-    data: conv,
-  });
 });
 
 export {
@@ -269,6 +261,7 @@ export {
   getConversations,
   CollectMebersId,
   deleteConversation,
+  updateConversation,
   leaveConversation,
   addMember,
   addAdmin,

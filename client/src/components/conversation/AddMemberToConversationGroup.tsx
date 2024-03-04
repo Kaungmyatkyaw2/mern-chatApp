@@ -41,7 +41,7 @@ export const AddMemberToConversationGroup = ({
   conversation,
 }: Props) => {
   const [email, setEmail] = useState("");
-  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [showError, setShowError] = useState(false);
   const [addToConversation, addToConversationMutation] = useAddMemberMutation();
   const getUsersQuery = useGetUsersQuery(email || "", {
     skip: !email,
@@ -72,15 +72,15 @@ export const AddMemberToConversationGroup = ({
         }
       }
     } catch {
-      setShowSnackBar(true);
+      setShowError(true);
     }
   };
 
   return (
     <>
       <ErrorSnackbar
-        show={showSnackBar}
-        setShow={setShowSnackBar}
+        show={showError}
+        setShow={setShowError}
         msg={
           (addToConversationMutation.error as { data: { message: string } })
             ?.data?.message

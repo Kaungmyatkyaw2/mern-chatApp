@@ -39,7 +39,7 @@ export const ConversationDetailModal = ({
 }: Props) => {
   const otherUser = useGetMember(conversation);
   const [addAdmin, addAdminMutation] = useAddAdminMutation();
-  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   if (!conversation) return null;
 
@@ -67,15 +67,15 @@ export const ConversationDetailModal = ({
       }).unwrap();
       socket?.emit("leaveConversation", res.data);
     } catch {
-      setShowSnackBar(true);
+      setShowError(true);
     }
   };
 
   return (
     <>
       <ErrorSnackbar
-        show={showSnackBar}
-        setShow={setShowSnackBar}
+        show={showError}
+        setShow={setShowError}
         msg={
           (addAdminMutation.error as { data: { message: string } })?.data
             ?.message

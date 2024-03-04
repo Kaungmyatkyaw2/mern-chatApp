@@ -32,7 +32,7 @@ export const LeaveConversation = ({
   socket,
 }: Props) => {
   const [leaveConv, { isLoading, error }] = useLeaveConversationMutation();
-  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleLeave = async () => {
@@ -45,15 +45,15 @@ export const LeaveConversation = ({
       navigate("/conversations");
       setOpen(false);
     } catch (error) {
-      setShowSnackBar(true);
+      setShowError(true);
     }
   };
 
   return (
     <>
       <ErrorSnackbar
-        show={showSnackBar}
-        setShow={setShowSnackBar}
+        show={showError}
+        setShow={setShowError}
         msg={(error as { data: { message: string } })?.data?.message}
       />
       <Dialog open={open} disableEscapeKeyDown>

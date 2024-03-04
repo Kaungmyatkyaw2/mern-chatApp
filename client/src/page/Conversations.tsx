@@ -216,6 +216,7 @@ export const Conversations = () => {
           xs={isInChat ? 12 : 0}
           sx={{
             height: "100vh",
+            overflowY: "scroll",
             display: {
               sm: "grid",
               xs: isInChat ? "grid" : "none",

@@ -29,8 +29,29 @@ const endpoints = ApiSlice.injectEndpoints({
       }),
     }),
     getMe: builder.query<QueryResponse<User>, void>({
-      query: () => "users/getMe",
+      query: () => "users/me",
       keepUnusedDataFor: 0,
+    }),
+    updateMe: builder.mutation<QueryResponse<User>, { name: string }>({
+      query: (body) => ({
+        url: "users/me",
+        method: "PATCH",
+        body,
+      }),
+    }),
+    updateMyPassword: builder.mutation<
+      LoginReturnType,
+      {
+        password: string;
+        passwordConfirm: string;
+        oldPassword: string;
+      }
+    >({
+      query: (body) => ({
+        url: "users/updateMyPassword",
+        method: "PATCH",
+        body,
+      }),
     }),
     logout: builder.mutation<LoginReturnType, void>({
       query: () => ({
@@ -47,4 +68,6 @@ export const {
   useGetMeQuery,
   useLogoutMutation,
   useGoogleAuthMutation,
+  useUpdateMeMutation,
+  useUpdateMyPasswordMutation,
 } = endpoints;

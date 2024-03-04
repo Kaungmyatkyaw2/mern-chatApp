@@ -3,6 +3,7 @@ import { User, UserModel } from "../models/userModel";
 import { getOne, getAll } from "./handlerFactory";
 import { catchAsync } from "../utils/catchAsync";
 import ApiFeatures from "../utils/apiFeatures";
+import AppError from "../utils/appError";
 
 const setUserId: RequestHandler = (req, res, next) => {
   (req.params as { id: string }).id = req.user?._id || "";
@@ -26,4 +27,23 @@ const getUsersBySearching = catchAsync(async (req, res, next) => {
   });
 });
 
-export { getUser, setUserId, getUsers, getUsersBySearching };
+const updateMe = catchAsync(async (req, res, next) => {
+  if (!req.body.name) {
+    return next(new AppError("Please provide info to update!", 400));
+  }
+
+  const user = await UserModel.findByIdAndUpdate(
+    req.user?._id,
+    {
+      name: req.body?.name,
+    },
+    { returnDocument: "after" }
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: user,
+  });
+});
+
+export { getUser, setUserId, getUsers, getUsersBySearching, updateMe };

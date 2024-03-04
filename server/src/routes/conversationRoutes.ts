@@ -18,7 +18,8 @@ Router.route("/")
   );
 Router.route("/:id")
   .get(conversationController.getConversation)
-  .delete(conversationController.deleteConversation);
+  .delete(conversationController.deleteConversation)
+  .patch(conversationController.updateConversation);
 
 Router.route("/:id/members")
   .post(conversationController.addMember)

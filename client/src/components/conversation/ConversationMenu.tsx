@@ -1,4 +1,4 @@
-import { Add, Delete, Logout, MoreHoriz } from "@mui/icons-material";
+import { Add, Delete, Edit, Logout, MoreHoriz } from "@mui/icons-material";
 import {
   IconButton,
   ListItemIcon,
@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import { getUser } from "../../store/slices/auth.slice";
 import { LeaveConversation } from "./LeaveConversationDialog";
 import { AddMemberToConversationGroup } from "./AddMemberToConversationGroup";
+import { EditConversationName } from "./EditConversationName";
 
 interface Props {
   conversation: Conversation | undefined;
@@ -24,6 +25,7 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [deletDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
@@ -48,6 +50,12 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
         setOpen={setDeleteDialogOpen}
         conversation={conversation}
       />
+      <EditConversationName
+        socket={socket}
+        open={editDialogOpen}
+        setOpen={setEditDialogOpen}
+        conversation={conversation}
+      />
       <LeaveConversation
         socket={socket}
         open={leaveDialogOpen}
@@ -65,6 +73,19 @@ export const ConversationMenu = ({ conversation, socket }: Props) => {
         <MoreHoriz />
       </IconButton>
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+        {showAdminBtns && (
+          <MenuItem
+            onClick={() => {
+              setEditDialogOpen(true);
+            }}
+          >
+            <ListItemIcon>
+              <Edit fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Edit Name</ListItemText>
+          </MenuItem>
+        )}
+
         {(!conversation?.isGroup || showAdminBtns) && (
           <MenuItem
             onClick={() => {

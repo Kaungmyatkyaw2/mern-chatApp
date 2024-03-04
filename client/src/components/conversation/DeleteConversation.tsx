@@ -28,7 +28,7 @@ export const DeleteConversation = ({
   socket,
 }: Props) => {
   const [deleteConver, { isLoading, error }] = useDeleteConversationMutation();
-  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
   const handleDelete = async () => {
     try {
@@ -37,15 +37,15 @@ export const DeleteConversation = ({
       navigate("/conversations");
       setOpen(false);
     } catch (error) {
-      setShowSnackBar(true);
+      setShowError(true);
     }
   };
 
   return (
     <>
       <ErrorSnackbar
-        show={showSnackBar}
-        setShow={setShowSnackBar}
+        show={showError}
+        setShow={setShowError}
         msg={(error as { data: { message: string } })?.data?.message}
       />
       <Dialog open={open} disableEscapeKeyDown>

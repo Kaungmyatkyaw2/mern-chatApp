@@ -35,7 +35,7 @@ export const CreateConversationGroup = ({ open, setOpen, socket }: Props) => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [members, setMembers] = useState<User[]>([]);
-  const [showSnackBar, setShowSnackBar] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   const navigate = useNavigate();
   const [createConversation, createConversationMutation] =
@@ -91,15 +91,15 @@ export const CreateConversationGroup = ({ open, setOpen, socket }: Props) => {
       setOpen(false);
       navigate(`/conversations/${res.data._id}`);
     } catch {
-      setShowSnackBar(true);
+      setShowError(true);
     }
   };
 
   return (
     <>
       <ErrorSnackbar
-        show={showSnackBar}
-        setShow={setShowSnackBar}
+        show={showError}
+        setShow={setShowError}
         msg={
           (createConversationMutation.error as { data: { message: string } })
             ?.data?.message
