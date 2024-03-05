@@ -29,7 +29,7 @@ const getUsersBySearching = catchAsync(async (req, res, next) => {
 
 const updateMe = catchAsync(async (req, res, next) => {
   const { name, picture } = req.body;
-  if (name && picture) {
+  if (!name && !picture) {
     return next(new AppError("Please provide info to update!", 400));
   }
 
