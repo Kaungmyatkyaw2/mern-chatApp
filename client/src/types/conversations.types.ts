@@ -8,5 +8,6 @@ export interface Conversation {
   admins: string[];
   isGroup: boolean;
   createdAt: Date;
+  lastMsgAt? : number;
   lastMessage?: Message;
 }

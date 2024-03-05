@@ -73,8 +73,18 @@ export const updateLastMsg = (lastMsg: Message, conversationId: string) =>
     undefined,
     (draft) => {
       draft.data = draft.data.map((el) =>
-        el._id == conversationId ? { ...el, lastMessage: lastMsg } : el
+        el._id == conversationId
+          ? {
+              ...el,
+              lastMessage: lastMsg,
+              lastMsgAt: new Date(Date.parse("" + lastMsg.createdAt)).getTime(),
+            }
+          : el
       );
+
+      draft.data.sort((a, b) => {
+        return (b?.lastMsgAt || 0) - (a?.lastMsgAt || 0);
+      });
     }
   );
 

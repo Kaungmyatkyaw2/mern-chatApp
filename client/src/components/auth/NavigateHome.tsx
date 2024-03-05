@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useGetMeQuery } from "../../store/slices/api/endpoints/auth.endpoints";
-import { Box, LinearProgress } from "@mui/material";
 import { useEffect } from "react";
+import LoadingScreen from "../others/LoadingScreen";
 
 export const NavigateHome = () => {
   const { isFetching, isSuccess, refetch } = useGetMeQuery();
@@ -12,10 +12,9 @@ export const NavigateHome = () => {
 
   if (isFetching) {
     return (
-      <Box>
-        <LinearProgress />
+      <LoadingScreen>
         <Outlet />
-      </Box>
+      </LoadingScreen>
     );
   }
 

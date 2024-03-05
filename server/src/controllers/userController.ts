@@ -28,17 +28,23 @@ const getUsersBySearching = catchAsync(async (req, res, next) => {
 });
 
 const updateMe = catchAsync(async (req, res, next) => {
-  if (!req.body.name) {
+  const { name, picture } = req.body;
+  if (name && picture) {
     return next(new AppError("Please provide info to update!", 400));
   }
 
-  const user = await UserModel.findByIdAndUpdate(
-    req.user?._id,
-    {
-      name: req.body?.name,
-    },
-    { returnDocument: "after" }
-  );
+  let payload = {};
+
+  if (name) {
+    payload = { ...payload, name };
+  }
+  if (picture) {
+    payload = { ...payload, picture };
+  }
+
+  const user = await UserModel.findByIdAndUpdate(req.user?._id, payload, {
+    returnDocument: "after",
+  });
 
   res.status(200).json({
     status: "success",

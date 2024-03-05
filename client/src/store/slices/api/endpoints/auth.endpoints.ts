@@ -32,7 +32,10 @@ const endpoints = ApiSlice.injectEndpoints({
       query: () => "users/me",
       keepUnusedDataFor: 0,
     }),
-    updateMe: builder.mutation<QueryResponse<User>, { name: string }>({
+    updateMe: builder.mutation<
+      QueryResponse<User>,
+      { name: string; picture: string }
+    >({
       query: (body) => ({
         url: "users/me",
         method: "PATCH",

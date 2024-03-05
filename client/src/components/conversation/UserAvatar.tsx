@@ -1,5 +1,6 @@
 import { Avatar, AvatarProps } from "@mui/material";
 import { User } from "../../types/user.types";
+import getAvatar from "../../utils/getAvatar";
 
 interface Props extends AvatarProps {
   width?: number;
@@ -40,7 +41,7 @@ const UserAvatar = ({ user, width = 55, height = 55, ...props }: Props) => {
     <Avatar
       {...props}
       {...stringAvatar(user?.name || "", { width, height })}
-      src={user?.picture}
+      src={user?.picture || getAvatar(user?.name)}
     />
   );
 };

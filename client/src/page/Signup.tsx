@@ -36,7 +36,10 @@ export const Signup = () => {
 
   const onSubmit = async (values: FormValue) => {
     try {
-      const res = await signup(values).unwrap();
+      const res = await signup({
+        ...values,
+        picture: getAvatar(values?.name),
+      }).unwrap();
       dispatch(setAuth({ access_token: res.token, user: res.data }));
       navigate("/conversations");
     } catch (error) {
