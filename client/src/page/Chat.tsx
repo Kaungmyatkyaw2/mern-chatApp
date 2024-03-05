@@ -67,7 +67,11 @@ export const Chat = () => {
   }, [messagesQuery]);
 
   useEffect(() => {
-    if (!messagesQuery.isFetching) {
+    chatEndDisplay.current?.scrollIntoView();
+  }, []);
+
+  useEffect(() => {
+    if (!messagesQuery.isFetching && !isScrolled) {
       chatEndDisplay.current?.scrollIntoView();
     }
   }, [isScrolled, messagesQuery.data]);
