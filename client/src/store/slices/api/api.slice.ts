@@ -31,6 +31,14 @@ const baseQueryWithReAuth: BaseQueryFn = async (args, api, extraOptions) => {
 
       result = await baseQuery(args, api, extraOptions);
     } else {
+      await baseQuery(
+        {
+          url: "/users/logout",
+          method: "POST",
+        },
+        api,
+        extraOptions
+      );
       api.dispatch(logOut());
     }
   }
