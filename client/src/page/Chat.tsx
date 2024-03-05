@@ -151,7 +151,7 @@ export const Chat = () => {
                       ? conversation?.name
                       : otherUser?.name}{" "}
                   </Typography>
-                  <Typography fontSize={"13px"}>Active</Typography>
+                  {/* <Typography fontSize={"13px"}>Active</Typography> */}
                 </Box>
               </Box>
               <Box>
