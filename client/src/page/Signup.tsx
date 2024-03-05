@@ -17,6 +17,7 @@ import { useState } from "react";
 import { setAuth } from "../store/slices/auth.slice";
 import LoadingButton from "@mui/lab/LoadingButton";
 import ErrorSnackbar from "../components/others/ErrorSnackbar";
+import getAvatar from "../utils/getAvatar";
 
 interface FormValue {
   email: string;
