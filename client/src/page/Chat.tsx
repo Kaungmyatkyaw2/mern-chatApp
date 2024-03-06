@@ -177,6 +177,9 @@ export const Chat = () => {
               }}
               ref={chatDisplay}
             >
+              <Box sx={{ display: "flex", justifyContent: "center",py : "10px" }}>
+                {messagesQuery.isFetching ? <CircularProgress size={15} /> : ""}
+              </Box>
               <Box sx={{ pt: "5px", pb: "20px" }}>
                 {messagesQuery.isLoading ? (
                   <ChatLoading />

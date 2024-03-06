@@ -171,7 +171,12 @@ export const Conversations = () => {
                   />
                 </IconButton>
                 <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-                  <MenuItem onClick={() => {navigate("/conversations/profile")}}>
+                  <MenuItem
+                    onClick={() => {
+                      navigate("/conversations/profile");
+                      setAnchorEl(null);
+                    }}
+                  >
                     <ListItemIcon>
                       <Person fontSize="small" />
                     </ListItemIcon>
