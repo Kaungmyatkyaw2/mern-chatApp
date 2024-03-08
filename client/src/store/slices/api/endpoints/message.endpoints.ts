@@ -30,6 +30,7 @@ const MessageEndpoints = ApiSlice.injectEndpoints({
           currentArg?.page !== previousArg?.page
         );
       },
+      keepUnusedDataFor: 0,
     }),
   }),
 });
