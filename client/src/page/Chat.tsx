@@ -56,27 +56,27 @@ export const Chat = () => {
     });
   }, []);
 
-  useEffect(() => {
-    if (chatDisplay.current == null) return;
-    const el = chatDisplay.current;
+  // useEffect(() => {
+  //   if (chatDisplay.current == null) return;
+  //   const el = chatDisplay.current;
 
-    const onScroll = async () => {
-      if (el.scrollTop < 30) {
-        if (messagesQuery.data?.results == 10 && !messagesQuery.isFetching) {
-          setPage((prev) => prev + 1);
-        }
-      }
-      if (el.scrollHeight == el.scrollTop) {
-        setIsScrolled(false);
-      } else {
-        setIsScrolled(true);
-      }
-    };
+  //   const onScroll = async () => {
+  //     if (el.scrollTop < 30) {
+  //       if (messagesQuery.data?.results == 10 && !messagesQuery.isFetching) {
+  //         setPage((prev) => prev + 1);
+  //       }
+  //     }
+  //     if (el.scrollHeight == el.scrollTop) {
+  //       setIsScrolled(false);
+  //     } else {
+  //       setIsScrolled(true);
+  //     }
+  //   };
 
-    el.addEventListener("scroll", onScroll);
+  //   el.addEventListener("scroll", onScroll);
 
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [messagesQuery]);
+  //   return () => el.removeEventListener("scroll", onScroll);
+  // }, [messagesQuery]);
 
   useEffect(() => {
     if (messagesQuery.isSuccess && messagesQuery.originalArgs?.page == 0) {
