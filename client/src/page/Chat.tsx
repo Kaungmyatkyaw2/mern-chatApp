@@ -12,6 +12,7 @@ import { ConversationDetailModal } from "../components/conversation";
 import { ConversationMenu } from "../components/conversation";
 import { useOutletContext } from "react-router-dom";
 import { Socket } from "socket.io-client";
+import { Message } from "../types/message.types";
 
 const ChatLoading = () => {
   return (
@@ -45,6 +46,17 @@ export const Chat = () => {
   const messages = messagesQuery.data?.data;
 
   useEffect(() => {
+    messagesQuery.refetch();
+    socket?.on("receiveMessage", (data: Message) => {
+      if (typeof data.conversation == "object") {
+        if (data.conversation._id == id) {
+          chatEndDisplay.current?.scrollIntoView();
+        }
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     if (chatDisplay.current == null) return;
     const el = chatDisplay.current;
 
@@ -67,11 +79,7 @@ export const Chat = () => {
   }, [messagesQuery]);
 
   useEffect(() => {
-    chatEndDisplay.current?.scrollIntoView();
-  }, []);
-
-  useEffect(() => {
-    if (!messagesQuery.isFetching && !isScrolled) {
+    if (messagesQuery.isSuccess && messagesQuery.originalArgs?.page == 0) {
       chatEndDisplay.current?.scrollIntoView();
     }
   }, [isScrolled, messagesQuery.data]);
@@ -177,7 +185,9 @@ export const Chat = () => {
               }}
               ref={chatDisplay}
             >
-              <Box sx={{ display: "flex", justifyContent: "center",py : "10px" }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "center", py: "10px" }}
+              >
                 {messagesQuery.isFetching ? <CircularProgress size={15} /> : ""}
               </Box>
               <Box sx={{ pt: "5px", pb: "20px" }}>
