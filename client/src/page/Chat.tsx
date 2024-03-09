@@ -1,4 +1,4 @@
-import { Box, CircularProgress, IconButton, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, IconButton, Typography } from "@mui/material";
 import { ArrowBack, Error } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetConversationQuery } from "../store/slices/api/endpoints/conversation.endpoints";
@@ -32,7 +32,6 @@ const ChatLoading = () => {
 export const Chat = () => {
   const { id } = useParams();
   const [page, setPage] = useState(1);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const chatDisplay = useRef<HTMLDivElement>(null);
   const chatEndDisplay = useRef<HTMLDivElement>(null);
@@ -56,33 +55,17 @@ export const Chat = () => {
     });
   }, []);
 
-  // useEffect(() => {
-  //   if (chatDisplay.current == null) return;
-  //   const el = chatDisplay.current;
-
-  //   const onScroll = async () => {
-  //     if (el.scrollTop < 30) {
-  //       if (messagesQuery.data?.results == 10 && !messagesQuery.isFetching) {
-  //         setPage((prev) => prev + 1);
-  //       }
-  //     }
-  //     if (el.scrollHeight == el.scrollTop) {
-  //       setIsScrolled(false);
-  //     } else {
-  //       setIsScrolled(true);
-  //     }
-  //   };
-
-  //   el.addEventListener("scroll", onScroll);
-
-  //   return () => el.removeEventListener("scroll", onScroll);
-  // }, [messagesQuery]);
+  const onLoadMore = () => {
+    if (messagesQuery.data?.results == 10 && !messagesQuery.isFetching) {
+      setPage((prev) => prev + 1);
+    }
+  };
 
   useEffect(() => {
     if (messagesQuery.isSuccess && messagesQuery.originalArgs?.page == 0) {
       chatEndDisplay.current?.scrollIntoView();
     }
-  }, [isScrolled, messagesQuery.data]);
+  }, [messagesQuery.data]);
 
   const handleOpenDetailModal = () => {
     setDetailModalOpen(true);
@@ -163,7 +146,6 @@ export const Chat = () => {
                       ? conversation?.name
                       : otherUser?.name}{" "}
                   </Typography>
-                  {/* <Typography fontSize={"13px"}>Active</Typography> */}
                 </Box>
               </Box>
               <Box>
@@ -185,6 +167,16 @@ export const Chat = () => {
               }}
               ref={chatDisplay}
             >
+              <Box
+                sx={{ display: "flex", justifyContent: "center", py: "10px" }}
+              >
+                {!messagesQuery.isFetching &&
+                messagesQuery.data?.results == 10 ? (
+                  <Button variant="outlined" size="small" onClick={onLoadMore}>See more</Button>
+                ) : (
+                  ""
+                )}
+              </Box>
               <Box
                 sx={{ display: "flex", justifyContent: "center", py: "10px" }}
               >
