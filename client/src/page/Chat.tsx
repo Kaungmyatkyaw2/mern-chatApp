@@ -1,11 +1,20 @@
-import { Box, Button, CircularProgress, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import { ArrowBack, Error } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetConversationQuery } from "../store/slices/api/endpoints/conversation.endpoints";
 import useGetMember from "../hooks/useGetMember";
 import UserAvatar from "../components/conversation/UserAvatar";
-import { useGetMessagesQuery } from "../store/slices/api/endpoints/message.endpoints";
-import { useEffect, useRef, useState } from "react";
+import {
+  addNewMessage,
+  useGetMessagesQuery,
+} from "../store/slices/api/endpoints/message.endpoints";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageCard, MessageSendInput } from "../components/message";
 import GroupAvatar from "../components/conversation/GroupAvatar";
 import { ConversationDetailModal } from "../components/conversation";
@@ -13,6 +22,7 @@ import { ConversationMenu } from "../components/conversation";
 import { useOutletContext } from "react-router-dom";
 import { Socket } from "socket.io-client";
 import { Message } from "../types/message.types";
+import { useDispatch } from "react-redux";
 
 const ChatLoading = () => {
   return (
@@ -29,43 +39,73 @@ const ChatLoading = () => {
   );
 };
 
+const ConversationLoading = () => {
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        height: "80%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+      }}
+    >
+      <CircularProgress size={30} />
+      <Typography>Please wait....</Typography>
+    </Box>
+  );
+};
+
 export const Chat = () => {
   const { id } = useParams();
+
   const [page, setPage] = useState(1);
+
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+
   const chatDisplay = useRef<HTMLDivElement>(null);
+
   const chatEndDisplay = useRef<HTMLDivElement>(null);
+
   const conversationQuery = useGetConversationQuery(id || "");
+
   const otherUser = useGetMember(conversationQuery.data?.data);
+
   const messagesQuery = useGetMessagesQuery({ id: id as string, page });
+
   const navigate = useNavigate();
+
   const { socket } = useOutletContext<{ socket: Socket | undefined }>();
+
+  const dispatch = useDispatch();
 
   const conversation = conversationQuery.data?.data;
   const messages = messagesQuery.data?.data;
 
   useEffect(() => {
-    messagesQuery.refetch();
     socket?.on("receiveMessage", (data: Message) => {
       if (typeof data.conversation == "object") {
         if (data.conversation._id == id) {
+          //@ts-ignore
+          dispatch(addNewMessage(data, data.conversation._id));
           chatEndDisplay.current?.scrollIntoView();
         }
       }
     });
   }, []);
 
-  const onLoadMore = () => {
-    if (messagesQuery.data?.results == 10 && !messagesQuery.isFetching) {
-      setPage((prev) => prev + 1);
-    }
-  };
-
   useEffect(() => {
-    if (messagesQuery.isSuccess && messagesQuery.originalArgs?.page == 0) {
+    if (messagesQuery.originalArgs?.page == 1) {
       chatEndDisplay.current?.scrollIntoView();
     }
   }, [messagesQuery.data]);
+
+  const onLoadMore = useCallback(() => {
+    if (messagesQuery.data?.results == 10 && !messagesQuery.isFetching) {
+      setPage((prev) => prev + 1);
+    }
+  }, [messagesQuery]);
 
   const handleOpenDetailModal = () => {
     setDetailModalOpen(true);
@@ -99,19 +139,7 @@ export const Chat = () => {
       />
       <Box width={"100%"} height={"100vh"}>
         {conversationQuery.isLoading ? (
-          <Box
-            sx={{
-              width: "100%",
-              height: "80%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              flexDirection: "column",
-            }}
-          >
-            <CircularProgress size={30} />
-            <Typography>Please wait....</Typography>
-          </Box>
+          <ConversationLoading />
         ) : (
           <>
             <Box
@@ -171,16 +199,20 @@ export const Chat = () => {
                 sx={{ display: "flex", justifyContent: "center", py: "10px" }}
               >
                 {!messagesQuery.isFetching &&
-                messagesQuery.data?.results == 10 ? (
-                  <Button variant="outlined" size="small" onClick={onLoadMore}>See more</Button>
-                ) : (
-                  ""
-                )}
+                  messagesQuery.data?.results == 10 && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={onLoadMore}
+                    >
+                      See more
+                    </Button>
+                  )}
               </Box>
               <Box
                 sx={{ display: "flex", justifyContent: "center", py: "10px" }}
               >
-                {messagesQuery.isFetching ? <CircularProgress size={15} /> : ""}
+                {messagesQuery.isFetching && <CircularProgress size={15} />}
               </Box>
               <Box sx={{ pt: "5px", pb: "20px" }}>
                 {messagesQuery.isLoading ? (
@@ -194,8 +226,8 @@ export const Chat = () => {
                     />
                   ))
                 )}
-                <div ref={chatEndDisplay} />
               </Box>
+              <div ref={chatEndDisplay} />
             </Box>
             <MessageSendInput socket={socket} />
           </>

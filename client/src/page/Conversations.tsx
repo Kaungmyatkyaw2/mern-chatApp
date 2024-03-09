@@ -30,7 +30,6 @@ import io, { Socket } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
 import { getUser, logOut } from "../store/slices/auth.slice";
 import { Conversation } from "../types/conversations.types";
-import { addNewMessage } from "../store/slices/api/endpoints/message.endpoints";
 import { Message } from "../types/message.types";
 import UserAvatar from "../components/conversation/UserAvatar";
 import { setConversation } from "../store/slices/conversation.slice";
@@ -71,8 +70,6 @@ export const Conversations = () => {
       socket = io(API_URL);
       socket.emit("connected", { userId: user?._id });
       socket.on("receiveMessage", (data: Message) => {
-        //@ts-ignore
-        dispatch(addNewMessage(data, data.conversation._id as string));
         //@ts-ignore
         dispatch(updateLastMsg(data, data.conversation._id as string));
       });
@@ -229,6 +226,7 @@ export const Conversations = () => {
           }}
         >
           <Outlet
+            key={window.location.pathname}
             context={{ socket } satisfies { socket: Socket | undefined }}
           />
         </Grid>
